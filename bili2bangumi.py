@@ -10,7 +10,10 @@ bilibili动画观看数据导入bangumi
 """
 
 import json
+import webbrowser
 import logging
+import socket
+import re
 
 import requests
 from bilibili_api import Verify
@@ -20,14 +23,13 @@ from bilibili_api.user import get_bangumi_g
 # 获取观看数据, 如果不公开需要使用库中 Verify 给予权限
 
 # bilibili api config
-uid = 1  # bilibili 用户id(整型), 必填
-sessdata = ""  # verify 字段
-csrf = ""  # verify 字段
+uid = 12345                    # Bilibili 用户ID，必填
+sessdata = "此处填入 sessdata"  # 填入 sessdata，选填
+csrf = "此处填入 csrf"          # 填入 csrf ，选填
 
 # bangumi oauth2 config
-client_id = ''  # 必填
-client_secret = ''  # 必填
-redirect_uri = 'http://localhost'  # 回调地址，必填
+client_id = '此处填入 App ID'          # 必填，填入 App ID
+client_secret = '此处填入 App Secret'  # 必填，填入 App Secret
 
 
 class BangumiTransfer(object):
@@ -136,15 +138,21 @@ def auth_bgm():
 
     auth_url = 'https://bgm.tv/oauth/authorize?client_id=' + \
         client_id + '&response_type=code'
-    print("访问该地址并同意授权:\n"+auth_url)
+    print("访问该地址并同意授权:\n"+auth_url+"\n")
+
+    try:
+        webbrowser.open(url = auth_url, new = 0)
+    except:
+        pass
 
     payload = {'grant_type': 'authorization_code',
                'client_id': client_id, 'client_secret': client_secret, 'code': '', 'redirect_uri': ''}
 
-    payload['code'] = input(
-        '输入返回授权码(eg. https://a.com/callback?code=AUTHORIZATION_CODE):\n')
+    # payload['code'] = input(
+        # '输入返回授权码(eg. https://a.com/callback?code=AUTHORIZATION_CODE):\n')
+    payload['code'] = runServer()
 
-    payload['redirect_uri'] = redirect_uri
+    payload['redirect_uri'] = "http://localhost:3000"
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58'
@@ -152,7 +160,7 @@ def auth_bgm():
     r = requests.post('https://bgm.tv/oauth/access_token',
                       data=payload, headers=headers).json()
     # print(r)
-    print(r['token_type']+' '+r['access_token'])
+    # print(r['token_type']+' '+r['access_token'])
     return r['token_type']+' '+r['access_token']
 
 
@@ -166,6 +174,21 @@ def main():
 
     bgmtran = BangumiTransfer(uid, verify, bgm_token)
     bgmtran.main()
+
+def runServer(server_address = ('localhost', 3000)):
+    sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    sock.bind(server_address)
+    sock.listen(1)
+    print("本地监听服务器已开启，请在浏览器中同意授权...")
+    while True:
+        connection= sock.accept()[0]
+        try:
+            data = connection.recv(1024)
+        finally:
+            code = re.findall('code=(.*?) ',data.decode('utf-8'))
+            print("已获取到Code：" + code[0])
+            connection.close()
+            return str(code[0])
 
 
 if __name__ == '__main__':
