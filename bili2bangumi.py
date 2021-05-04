@@ -17,10 +17,16 @@ from bilibili_api import Verify
 from bilibili_api.user import get_bangumi_g
 
 # 使用bilibili-api库
-# 获取观看数据, 如果不公开需要用库的Verify给予权限
+# 获取观看数据, 如果不公开需要使用库中 Verify 给予权限
 
-# 日志配置
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+# bilibili api config
+uid = 1  # bangumi 用户id(整型), 必填
+sessdata = ""  # verify 字段
+csrf = ""  # verify 字段
+
+# bangumi oauth2 config
+client_id = ''  # 必填
+client_secret = ''  # 必填
 
 
 class BangumiTransfer(object):
@@ -30,7 +36,7 @@ class BangumiTransfer(object):
     bgm_api = 'https://api.bgm.tv'
     bangumi_data = None
 
-    def __init__(self, uid, verify, auth_code):
+    def __init__(self, uid, verify, bgm_token):
         """初始化
 
         Args:
@@ -40,7 +46,7 @@ class BangumiTransfer(object):
         """
         self.uid = uid
         self.verify = verify
-        self.auth_code = auth_code
+        self.bgm_token = bgm_token
 
     def main(self):
         """主程序运行,开始转移,只将已看过的转移到bgm
@@ -93,7 +99,7 @@ class BangumiTransfer(object):
             id)
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58',
-            'AUthorization': self.auth_code
+            'AUthorization': self.bgm_token
         }
         payload = {'status': 'collect'}
         try:
@@ -125,17 +131,17 @@ def auth_bgm():
     因为需要使用bangumi api,bangumi api又只提供了授权码模式,
     所以需要获取client_id,client_secret.
     """
-    client_id = ''  # 必填
-    client_secret = ''  # 必填
+    global client_id, client_secret
 
     auth_url = 'https://bgm.tv/oauth/authorize?client_id=' + \
         client_id + '&response_type=code'
-    print(auth_url)
+    print("访问该地址并同意授权:\n"+auth_url)
 
     payload = {'grant_type': 'authorization_code',
                'client_id': client_id, 'client_secret': client_secret, 'code': '', 'redirect_uri': ''}
 
-    payload['code'] = ''  # 必填
+    payload['code'] = input(
+        '输入返回授权码(eg. https://a.com/callback?code=AUTHORIZATION_CODE):\n')
 
     payload['redirect_uri'] = 'https://localhost'
 
@@ -144,22 +150,22 @@ def auth_bgm():
     }
     r = requests.post('https://bgm.tv/oauth/access_token',
                       data=payload, headers=headers).json()
-    print(r)
+    # print(r)
     print(r['token_type']+' '+r['access_token'])
+    return r['token_type']+' '+r['access_token']
 
 
 def main():
-    uid = 1  # bangumi 用户id(整型), 必填
-    sessdata = ""  # 必填
-    csrf = ""  # 必填
-    auth_code = ""  # 必填
+    global uid, sessdata, csrf
+
+    # bgm_token = ""  # 必填
+    bgm_token = auth_bgm()
 
     verify = Verify(sessdata, csrf)
 
-    bgmtran = BangumiTransfer(uid, verify, auth_code)
+    bgmtran = BangumiTransfer(uid, verify, bgm_token)
     bgmtran.main()
 
 
 if __name__ == '__main__':
-    auth_bgm()
-    # main()
+    main()
