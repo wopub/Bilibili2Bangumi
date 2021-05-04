@@ -20,7 +20,7 @@ from bilibili_api.user import get_bangumi_g
 # 获取观看数据, 如果不公开需要使用库中 Verify 给予权限
 
 # bilibili api config
-uid = 1  # bangumi 用户id(整型), 必填
+uid = 1  # bilibili 用户id(整型), 必填
 sessdata = ""  # verify 字段
 csrf = ""  # verify 字段
 
