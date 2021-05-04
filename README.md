@@ -20,8 +20,9 @@ python 3.8+
     csrf = ""  # verify 字段
    ```
    如果未公开观看信息，则需要获得登录字段，[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)
-3. bangumi api oauth2授权 `oauth2` `client_id` `client_secret`
+3. bangumi api oauth2授权配置 `oauth2` `client_id` `client_secret`
    1. 在[bangmu开发平台](https://bgm.tv/dev/app)创建应用
    ![image](https://user-images.githubusercontent.com/47666274/116972266-5ba99880-aced-11eb-8553-bcf540f5641f.png)
    2. 获取 `App ID` 与 `App Secret` 分别填入 `client_id` `client_secret`
+   3. 设置回调地址 `redirect_uri`
 4. 运行程序

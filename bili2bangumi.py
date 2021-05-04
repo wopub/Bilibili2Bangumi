@@ -27,6 +27,7 @@ csrf = ""  # verify 字段
 # bangumi oauth2 config
 client_id = ''  # 必填
 client_secret = ''  # 必填
+redirect_uri = 'http://localhost'  # 回调地址，必填
 
 
 class BangumiTransfer(object):
@@ -131,7 +132,7 @@ def auth_bgm():
     因为需要使用bangumi api,bangumi api又只提供了授权码模式,
     所以需要获取client_id,client_secret.
     """
-    global client_id, client_secret
+    global client_id, client_secret, redirect_uri
 
     auth_url = 'https://bgm.tv/oauth/authorize?client_id=' + \
         client_id + '&response_type=code'
@@ -143,7 +144,7 @@ def auth_bgm():
     payload['code'] = input(
         '输入返回授权码(eg. https://a.com/callback?code=AUTHORIZATION_CODE):\n')
 
-    payload['redirect_uri'] = 'https://localhost'
+    payload['redirect_uri'] = redirect_uri
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58'
