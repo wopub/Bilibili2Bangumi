@@ -16,7 +16,7 @@
 
 3. 配置 Bilibili-API ：
    
-   如果 Bilibili 个人隐私设置 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)
+   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)
    
    获取后在 `bili2bangumi.py` 中填入 `sessdata` 、`csrf` 信息
    
@@ -39,7 +39,7 @@
    
    > ![image](https://user-images.githubusercontent.com/37031767/116994802-c669cc80-ad0b-11eb-9033-f60de4e2471c.png)
    >
-   >  - 类型选 “应用”，其余随意填写
+   >   类型选 “应用”，其余随意填写
    >
    > ![image](https://user-images.githubusercontent.com/37031767/116995199-59a30200-ad0c-11eb-99f7-ef361a26e901.png)
    
