@@ -10,9 +10,9 @@
 
 2. 使用前安装依赖包：
 
-    ```
-    pip install -r requirements.txt
-    ```
+   ```
+   pip install -r requirements.txt
+   ```
 
 3. 配置 Bilibili-API ：
    
@@ -21,11 +21,11 @@
    获取后在 `bili2bangumi.py` 中填入 `sessdata` 、`csrf` 信息
    
    ```
-    # bili2bangumi.py 第 22 行：
+   # bili2bangumi.py 第 22 行：
 
-      uid = 12345                    # Bilibili 用户 ID，必填
-      sessdata = "此处填入 sessdata"  # 填入 sessdata，选填
-      csrf = "此处填入 csrf"          # 填入 csrf ，选填
+   uid = 12345                    # Bilibili 用户 ID，必填
+   sessdata = "此处填入 sessdata"  # 填入 sessdata，选填
+   csrf = "此处填入 csrf"          # 填入 csrf ，选填
    ```
 
 
@@ -35,32 +35,32 @@
    
    下面是获取方法:
    
-    1. 在 [Bangumi 开发平台](https://bgm.tv/dev/app) 中创建新应用，如下图
+   1. 在 [Bangumi 开发平台](https://bgm.tv/dev/app) 中创建新应用，如下图
    
-   > ![image](https://user-images.githubusercontent.com/37031767/116994802-c669cc80-ad0b-11eb-9033-f60de4e2471c.png)
-   >
-   >   类型选 “应用”，其余随意填写
-   >
-   > ![image](https://user-images.githubusercontent.com/37031767/116995199-59a30200-ad0c-11eb-99f7-ef361a26e901.png)
+      ![image](https://user-images.githubusercontent.com/37031767/116994802-c669cc80-ad0b-11eb-9033-f60de4e2471c.png)
+      
+      类型选 “应用”，其余随意填写
+      
+      ![image](https://user-images.githubusercontent.com/37031767/116995199-59a30200-ad0c-11eb-99f7-ef361a26e901.png)
    
    
-    2. 获取 `App ID` 与 `App Secret` ，
+   2. 获取 `App ID` 与 `App Secret` ，
        
-       并将 **回调地址** 设置为 `http://localhost:3000`
+      并将 **回调地址** 设置为 `http://localhost:3000`
    
-   > ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
+      ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
     
-    3. 将 `App ID` 与 `App Secret` 填入 `bili2bangumi.py` 中：
+   3. 将 `App ID` 与 `App Secret` 填入 `bili2bangumi.py` 中：
 
       ```
-        # bili2bangumi.py 第 28 行
+      # bili2bangumi.py 第 28 行
 
-         client_id = '此处填入 App ID'          # 必填，填入 App ID
-         client_secret = '此处填入 App Secret'  # 必填，填入 App Secret
+      client_id = '此处填入 App ID'          # 必填，填入 App ID
+      client_secret = '此处填入 App Secret'  # 必填，填入 App Secret
       ```
 
 5. 在完成上述步骤后，运行程序：
    
    ```
-      python bili2bangumi.py
+   python bili2bangumi.py
    ```
