@@ -37,7 +37,6 @@ class BangumiTransfer(object):
     """
     cdn_bangumi_data = "https://cdn.jsdelivr.net/npm/bangumi-data@0.3/dist/data.json"
     bgm_api = 'https://api.bgm.tv'
-    bangumi_data = None
 
     def __init__(self, uid, verify, bgm_token):
         """初始化
@@ -64,7 +63,23 @@ class BangumiTransfer(object):
 
         updated_bangumi = []  # 已更新bangumi
 
-        self.bangumi_data = requests.get(self.cdn_bangumi_data).json()
+        bangumi_data = requests.get(self.cdn_bangumi_data).json()
+        
+        # 构造 Bilibili -> Bangumi 番剧编号映射
+        bili2bgm_map = {}
+        for bangumi in bangumi_data['items']:
+            bili_id = bgm_id = None 
+            for site in bangumi['sites']:
+                name = site['site']
+                if name == 'bilibili':
+                    bili_id = int(site['id'])
+                elif name == 'bangumi':
+                    bgm_id = site['id']
+                else:
+                    continue
+                if bili_id is not None and bgm_id is not None:
+                    bili2bgm_map[bili_id] = bgm_id
+                    break
 
         # 用bilibili_api提供的get_bangumi_g获得追番数据
         for bangumi in get_bangumi_g(self.uid, 'bangumi', self.verify):
@@ -73,17 +88,18 @@ class BangumiTransfer(object):
             if bangumi['follow_status'] == 3:
                 logging.info('{} 正在更新...'.format(
                     bangumi['title']))  # TODO 显示输出
-                bgm_id = self.__get_bgm_id(bangumi)
-                if bgm_id:
+                try:
+                    bgm_id = bili2bgm_map[bangumi['media_id']]
+                except KeyError:
+                    failed_bangumi.append(bangumi['title'])
+                    logging.warning(
+                        "{} 无法获取bangumi(番组计划)条目id!".format(bangumi['title']))
+                else:
                     if self.__update_bgm(bgm_id):
                         updated_bangumi.append(bangumi['title'])
                         logging.info('{} 更新完成!'.format(bangumi['title']))
                     else:
                         logging.warning('{} 更新失败!'.format(bangumi['title']))
-                else:
-                    failed_bangumi.append(bangumi['title'])
-                    logging.warning(
-                        "{} 无法获取bangumi(番组计划)条目id!".format(bangumi['title']))
 
         logging.info('以下番组更新失败:', failed_bangumi)
         with open('updated.json', 'w', encoding='utf-8') as f:
@@ -114,18 +130,6 @@ class BangumiTransfer(object):
             return True
         else:
             return False
-
-    def __get_bgm_id(self, bili_bangumi):
-
-        bili_id = None
-        for item in self.bangumi_data['items']:
-            for site in item['sites']:
-                if site['site'] == 'bangumi':
-                    bgm_id = site['id']
-                elif site['site'] == 'bilibili':
-                    bili_id = site['id']
-            if bili_id and bili_bangumi['media_id'] == int(bili_id):
-                return bgm_id
 
 
 def auth_bgm():
