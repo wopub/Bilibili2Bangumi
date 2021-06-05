@@ -12,26 +12,38 @@ from bilibili_api.user import User, BangumiType
 from bilibili_api import Credential
 from requests import get, post, Timeout, HTTPError
 
+####################  设置  ####################
 
 # 基础设置，必填
-UID = "你的 UID"
+BILI_UID = "你的 Bilibili UID"
 
-# bilibili_api 设置，选填（开启隐私设置则必填）
+# bilibili_api 授权设置，选填（隐私设置为不公开则必填）
 SESSDATA = "你的 SESSDATA"
 BILI_JCT = "你的 bili_jct"
 BUVID3 = "你的 buvid3"
 
-# bangumi oauth2 设置，必填
+# Bangumi OAuth2 授权设置，必填
 APP_ID = '你的 App ID'
 APP_SECRET = '你的 App Secret'
 
+####################  设置  ####################
 
-BANGUMI_DATA_LINK = 'https://cdn.jsdelivr.net/npm/bangumi-data@0.3/dist/data.json'
+
+BANGUMI_DATA_LINK = \
+    'https://cdn.jsdelivr.net/npm/bangumi-data@0.3/dist/data.json'
 
 
 def get_bili2bgm_map(bangumi_data_link):
     '''构造 Bilibili -> Bangumi 番剧编号映射'''
-    bangumi_data = get(bangumi_data_link).json()
+    for i in range(3):  # 尝试三次
+        try:
+            bangumi_data = get(bangumi_data_link).json()
+        except Timeout:
+            continue
+        else:
+            break
+    else:
+        raise RuntimeError("网络连接错误")
     bili2bgm_map = defaultdict(lambda: None)
     for bangumi in bangumi_data['items']:
         bili_id = bgm_id = None
@@ -48,10 +60,8 @@ def get_bili2bgm_map(bangumi_data_link):
                 break
     return bili2bgm_map
 
-# TODO: 重写为生成器
 
-
-def get_bili_bangumi_data(uid, credential):
+def get_bili_bangumi_data(uid, credential):  # TODO: 重写为生成器
     '''获取 Bilibili 番剧数据'''
     user = User(uid=uid, credential=credential)
     loop = get_event_loop()
@@ -59,9 +69,11 @@ def get_bili_bangumi_data(uid, credential):
     for pn in count(1):  # 依次获取每一页
         for i in range(3):  # 尝试三次
             try:
-                bangumi_data_raw = loop.run_until_complete(user.get_subscribed_bangumis(
-                    pn=pn, type_=BangumiType.BANGUMI
-                ))['list']
+                bangumi_data_raw = loop.run_until_complete(
+                    user.get_subscribed_bangumis(
+                        pn=pn, type_=BangumiType.BANGUMI
+                    )
+                )['list']
             except (asyncio_TimeoutError, ServerConnectionError):
                 continue
             else:
@@ -79,17 +91,20 @@ def get_bili_bangumi_data(uid, credential):
 
 
 class BgmAuthHTTPRequestHandler(BaseHTTPRequestHandler):
+    '''Bangumi 授权请求处理器'''
+
     def do_GET(self):
         self.server.code = parse_qs(urlparse(self.path).query)['code'][0]
 
 
 def auth_bgm(address, app_id, app_secret):
+    '''取得 Bangumi 授权'''
     server = HTTPServer(address, BgmAuthHTTPRequestHandler)
     webbrowser_open(
         f'https://bgm.tv/oauth/authorize?client_id={app_id}&response_type=code'
     )
     server.handle_request()
-    for i in range(3):
+    for i in range(3):  # 尝试三次
         try:
             r = post(
                 'https://bgm.tv/oauth/access_token',
@@ -101,8 +116,8 @@ def auth_bgm(address, app_id, app_secret):
                     'redirect_uri': 'http://localhost:3000'
                 },
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
-                    ' Gecko/20100101 Firefox/89.0'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64;'
+                    ' rv:89.0) Gecko/20100101 Firefox/89.0'
                 },
                 timeout=(20, 50)
             ).json()
@@ -116,6 +131,7 @@ def auth_bgm(address, app_id, app_secret):
 
 
 def update_bgm_one_bangumi_data(bangumi, status, bgm_auth_data):
+    '''更新 Bangumi 单个动画数据'''
     if bangumi is None:
         return False
     for i in range(3):
@@ -126,8 +142,8 @@ def update_bgm_one_bangumi_data(bangumi, status, bgm_auth_data):
                     'status': status
                 },
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
-                    ' Gecko/20100101 Firefox/89.0',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64;'
+                    ' rv:89.0) Gecko/20100101 Firefox/89.0',
                     'Authorization': bgm_auth_data
                 },
                 timeout=(20, 50)
@@ -143,6 +159,7 @@ def update_bgm_one_bangumi_data(bangumi, status, bgm_auth_data):
 
 
 def update_bgm_bangumi_data(bgm_bangumi_data, bgm_auth_data):
+    '''更新 Bangumi 动画数据'''
     for bangumi, status in bgm_bangumi_data:
         update_bgm_one_bangumi_data(bangumi, status, bgm_auth_data)
 
@@ -159,7 +176,7 @@ def main():
         credential = Credential(
             sessdata=SESSDATA, bili_jct=BILI_JCT, buvid3=BUVID3
         )
-    bili_bangumi_data = get_bili_bangumi_data(UID, credential)
+    bili_bangumi_data = get_bili_bangumi_data(BILI_UID, credential)
     bgm_auth_data = auth_bgm(('localhost', 3000), APP_ID, APP_SECRET)
 
     bgm_bangumi_data = dict(map(

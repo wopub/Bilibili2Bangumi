@@ -1,37 +1,52 @@
 # 说明
 
-之前为了将B站看过的动画迁移到bangumi写的, 本来只是自己用, 但公开可能对其他人会有帮助.
+之前为了将 B 站看过的动画迁移到 bangumi 写的, 本来只是自己用, 但公开可能对其他人会有帮助。
 
-仓库最近无法维护, 程序有很多缺点, 欢迎 PR 和 Contributors
+仓库最近无法维护, 程序有很多缺点, 欢迎 PR 和 Contributors。
 
 ## 使用说明
 
-1. Python版本要求：`Python 3.8+`
+1. Python 版本要求：`Python 3.8+`
 
-2. 使用前安装依赖包：
+2. 安装依赖包：
 
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. 配置 Bilibili-API ：
-   
-   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)
-   
-   获取后在 `bili2bangumi.py` 中填入 `sessdata` 、`csrf` 信息
-   
-   ```
-   # bili2bangumi.py 第 22 行：
-
-   uid = 12345                    # Bilibili 用户 ID，必填
-   sessdata = "此处填入 sessdata"  # 填入 sessdata，选填
-   csrf = "此处填入 csrf"          # 填入 csrf ，选填
+   ```sh
+   $ pip install requests bilibili_api
    ```
 
-
-4. Bangumi API OAuth2 授权配置:
+   或者
    
-   需获取并填入 `client_id` 与 `client_secret`
+   ```sh
+   $ pip install -r requirements.txt
+   ```
+
+3. 配置 Bilibili UID： 
+  
+   在 `bili2bangumi.py` 18 行中填入 `Bilibili UID`
+   
+   ```python
+   # 基础设置，必填
+   BILI_UID = "你的 Bilibili UID"
+   ```
+
+4. 配置 bilibili_api：
+   
+   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取 Credential 类所需信息，获取方法参见 [bilibili_api 文档](https://www.passkou.com/bilibili-api/#/get-credential)
+
+   **注意，请不要泄露这些信息给他人，否则你的账号将可能遭受被盗的风险！**
+   
+   获取后在 `bili2bangumi.py` 21-23 行中填入 `SESSDATA`、`bili_jct` 与 `buvid3`
+   
+   ```python
+   # bilibili_api 授权设置，选填（开启隐私设置则必填）
+   SESSDATA = "你的 SESSDATA"
+   BILI_JCT = "你的 bili_jct"
+   BUVID3 = "你的 buvid3"
+   ```
+
+5. Bangumi API OAuth2 授权配置:
+   
+   需获取并填入 `App ID` 与 `App Secret`
    
    下面是获取方法:
    
@@ -44,23 +59,22 @@
       ![image](https://user-images.githubusercontent.com/37031767/116995199-59a30200-ad0c-11eb-99f7-ef361a26e901.png)
    
    
-   2. 获取 `App ID` 与 `App Secret` ，
-       
-      并将 **回调地址** 设置为 `http://localhost:3000`
+   2. 获取 `App ID` 与 `App Secret`，并将 **回调地址** 设置为 `http://localhost:3000`
+      
+      **注意，请不要泄露这些信息给他人，否则你的应用权限将可能遭受被盗用的风险！**
    
       ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
     
-   3. 将 `App ID` 与 `App Secret` 填入 `bili2bangumi.py` 中：
+   3. 将 `App ID` 与 `App Secret` 填入 `bili2bangumi.py` 26-27 行中：
 
+      ```python
+      # Bangumi OAuth2 授权设置，必填
+      APP_ID = '你的 App ID'
+      APP_SECRET = '你的 App Secret'
       ```
-      # bili2bangumi.py 第 28 行
 
-      client_id = '此处填入 App ID'          # 必填，填入 App ID
-      client_secret = '此处填入 App Secret'  # 必填，填入 App Secret
-      ```
-
-5. 在完成上述步骤后，运行程序：
+6. 在完成上述步骤后，运行程序：
    
-   ```
-   python bili2bangumi.py
+   ```sh
+   $ python bili2bangumi.py
    ```
