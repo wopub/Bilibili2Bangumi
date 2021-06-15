@@ -1,37 +1,46 @@
-# 说明
+# Bilibili2Bangumi
 
-之前为了将B站看过的动画迁移到bangumi写的, 本来只是自己用, 但公开可能对其他人会有帮助.
+将 [Bilibili](https://www.bilibili.com/) 已看过的动画迁移至 [Bangumi](https://bgm.tv/)。
 
 仓库最近无法维护, 程序有很多缺点, 欢迎 PR 和 Contributors
 
-## 使用说明
+## 安装
 
-1. Python版本要求：`Python 3.8+`
+首先克隆或下载 [Bilibili2Bangumi](https://github.com/wopub/Bilibili2Bangumi) 仓库：
 
-2. 使用前安装依赖包：
+```
+git clone https://github.com/wopub/Bilibili2Bangumi.git
+```
 
-   ```
-   pip install -r requirements.txt
-   ```
+切换到程序根目录并开始安装依赖文件：
 
-3. 配置 Bilibili-API ：
+```
+pip install -r requirements.txt
+```
+
+该程序运行在 [Python](https://www.python.org/) **3.x**。
+
+## 使用
+
+按下述修改完配置文件后，运行程序：
    
-   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)
-   
-   获取后在 `bili2bangumi.py` 中填入 `sessdata` 、`csrf` 信息
-   
-   ```
-   # bili2bangumi.py 第 22 行：
+```
+python b2b.py
+```
 
-   uid = 12345                    # Bilibili 用户 ID，必填
-   sessdata = "此处填入 sessdata"  # 填入 sessdata，选填
-   csrf = "此处填入 csrf"          # 填入 csrf ，选填
-   ```
+### 修改配置文件 `config.py`
 
-
-4. Bangumi API OAuth2 授权配置:
+1. 配置 Bilibili-API ：
    
-   需获取并填入 `client_id` 与 `client_secret`
+   设置需要迁移用户的 Bilibili `UID`。
+   
+   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)。
+   
+   获取后在 `config.py` 中填入 `SESSDATA` 、`CSRF` 信息。
+
+2. Bangumi API OAuth2 授权配置:
+   
+   由于 [bangumi-api](https://github.com/bangumi/api/blob/master/docs-raw/How-to-Auth.md) 只提供 Oauth2 授权码方式，需获取并填入 `CLIENT_ID` 与 `CLIENT_SECRET`。
    
    下面是获取方法:
    
@@ -50,17 +59,10 @@
    
       ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
     
-   3. 将 `App ID` 与 `App Secret` 填入 `bili2bangumi.py` 中：
+   3. 将 `App ID` 与 `App Secret` 填入 `config.py` 中：
 
       ```
-      # bili2bangumi.py 第 28 行
-
-      client_id = '此处填入 App ID'          # 必填，填入 App ID
-      client_secret = '此处填入 App Secret'  # 必填，填入 App Secret
+      # bangumi oauth2 config
+      CLIENT_ID: str = '此处填入 App ID'          # 必填，填入 App ID
+      CLIENT_SECRET: str = '此处填入 App Secret'  # 必填，填入 App Secret
       ```
-
-5. 在完成上述步骤后，运行程序：
-   
-   ```
-   python bili2bangumi.py
-   ```
