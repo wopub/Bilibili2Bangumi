@@ -20,5 +20,6 @@ class Config(object):
     CSRF: str = ""          # 填入 csrf ，选填
 
     # bangumi oauth2 config
-    CLIENT_ID: str = '此处填入 App ID'          # 必填，填入 App ID
-    CLIENT_SECRET: str = '此处填入 App Secret'  # 必填，填入 App Secret
+    CLIENT_ID: str = "此处填入 App ID"          # 必填，填入 App ID
+    CLIENT_SECRET: str = "此处填入 App Secret"  # 必填，填入 App Secret
+    REDIRECT_URI: str = "http://localhost:3000"  # 回调地址

@@ -17,7 +17,8 @@ from lib.migrate import BangumiTransfer
 
 
 def main():
-    bgm_token = auth_bgm(Config.CLIENT_ID, Config.CLIENT_SECRET)
+    bgm_token = auth_bgm(
+        Config.CLIENT_ID, Config.CLIENT_SECRET, Config.REDIRECT_URI)
 
     verify = Verify(Config.SESSDATA, Config.CSRF)
 
