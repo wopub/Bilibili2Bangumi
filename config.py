@@ -15,11 +15,11 @@ class Config(object):
 
     # bilibili api config
     # 如果观看数据未公开，则需要设置 SESSDATA 和 CSRF
-    UID: int = 12345                    # Bilibili 用户ID，必填
-    SESSDATA: str = ""  # 填入 sessdata，选填
+    UID: int = 12345        # Bilibili 用户ID，必填
+    SESSDATA: str = ""      # 填入 sessdata，选填
     CSRF: str = ""          # 填入 csrf ，选填
 
     # bangumi oauth2 config
-    CLIENT_ID: str = "此处填入 App ID"          # 必填，填入 App ID
-    CLIENT_SECRET: str = "此处填入 App Secret"  # 必填，填入 App Secret
-    REDIRECT_URI: str = "http://localhost:3000"  # 回调地址
+    CLIENT_ID: str = "此处填入 App ID"             # 必填，填入 App ID
+    CLIENT_SECRET: str = "此处填入 App Secret"     # 必填，填入 App Secret
+    REDIRECT_URI: str = "http://localhost:3000"   # 回调地址

@@ -2,7 +2,7 @@
 
 将 [Bilibili](https://www.bilibili.com/) 已看过的动画迁移至 [Bangumi](https://bgm.tv/)。
 
-仓库最近无法维护, 程序有很多缺点, 欢迎 PR 和 Contributors
+欢迎 PR。
 
 ## 安装
 
