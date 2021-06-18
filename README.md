@@ -6,18 +6,25 @@
 
 ## 使用说明
 
-1. Python 版本要求：`Python 3.8+`
+1. Python 版本要求：
+
+   `Python 3.8+` 并安装了 `pip`
+
+   如果没有安装包管理器 `pipenv` 就先安装它：
+
+   ```sh
+   $ pip install pipenv
 
 2. 安装依赖包：
 
    ```sh
-   $ pip install requests bilibili_api
+   $ pipenv install
    ```
 
-   或者
-   
+   或者使用清华大学开源软件镜像源：
+
    ```sh
-   $ pip install -r requirements.txt
+   $ pipenv install --pypi-mirror https://pypi.tuna.tsinghua.edu.cn/simple
    ```
 
 3. 配置 Bilibili UID： 
