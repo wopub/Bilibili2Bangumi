@@ -214,11 +214,45 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
 
     async def update_one_bgm_bangumi_data(client, auth_data, bangumi):
         '''更新一部 Bangumi 动画数据'''
+        if bangumi[1] == 3:  # 看过 -> 更新分集进度
+            # 获取分集总数
+            subject_data = await try_for_times_async(  # 尝试三次
+                3,
+                lambda: client.get(
+                    f'https://api.bgm.tv/subject/{bangumi[0]}',
+                    headers={
+                        'User-Agent': 'Mozilla/5.0'
+                        ' (Windows NT 10.0; Win64; x64; rv:89.0)'
+                        ' Gecko/20100101 Firefox/89.0'
+                    }
+                ),
+                RequestError
+            )
+            eps_count = subject_data.json()['eps_count']
+            # 更新分集进度
+            response = await try_for_times_async(  # 尝试三次
+                3,
+                lambda: client.post(
+                    f'https://api.bgm.tv/subject/'
+                    f'{bangumi[0]}/update/{eps_count}',
+                    data={
+                        'status': {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
+                    },
+                    headers={
+                        'User-Agent': 'Mozilla/5.0'
+                        ' (Windows NT 10.0; Win64; x64; rv:89.0)'
+                        ' Gecko/20100101 Firefox/89.0',
+                        'Authorization': auth_data
+                    }
+                ),
+                RequestError
+            )
+            response.raise_for_status()
+        # 更新收藏
         response = await try_for_times_async(  # 尝试三次
             3,
             lambda: client.post(
-                f'https://api.bgm.tv/collection/'
-                f'{bangumi[0]}/update',
+                f'https://api.bgm.tv/collection/{bangumi[0]}/update',
                 data={
                     'status': {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
                 },
@@ -233,7 +267,6 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         )
         response.raise_for_status()
 
-    # TODO: 自动更新分集进度
     async def update_bgm_bangumi_data(auth_data):
         '''更新 Bangumi 动画数据'''
         nonlocal bangumi_remaining, bangumi_processed, bangumi_failed
