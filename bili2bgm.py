@@ -1,5 +1,5 @@
-from asyncio import get_event_loop, sleep
-from collections import defaultdict, deque
+from asyncio import get_event_loop
+from collections import deque
 from typing import Callable, Coroutine, Union, Tuple
 from webbrowser import open as webbrowser_open
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -88,7 +88,7 @@ def get_bili2bgm_map(bangumi_data_link):
         RequestError
     )
     print('  构造编号映射...')
-    bili2bgm_map = defaultdict(lambda: None)
+    bili2bgm_map = {}
     for bangumi in bangumi_data['items']:
         bili_id = bgm_id = None
         for site in bangumi['sites']:
@@ -169,6 +169,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
     bangumi_remaining = deque()
     bangumi_processed = 0
     bangumi_failed = deque()
+    bangumi_failed_count = 0
 
     async def get_bili_bangumi_data(credential, uid, bili2bgm_map):
         '''获取 Bilibili 番剧数据'''
@@ -212,14 +213,14 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         bili_auth_data, bili_uid, bili2bgm_map
     ))
 
-    async def update_one_bgm_bangumi_data(client, auth_data, bangumi):
+    async def update_one_bgm_bangumi_data(client, auth_data, bgm_id, status):
         '''更新一部 Bangumi 动画数据'''
-        if bangumi[1] == 3:  # 看过 -> 更新分集进度
+        if status == 'collect':  # 看过 -> 更新分集进度
             # 获取分集总数
             subject_data = await try_for_times_async(  # 尝试三次
                 3,
                 lambda: client.get(
-                    f'https://api.bgm.tv/subject/{bangumi[0]}',
+                    f'https://api.bgm.tv/subject/{bgm_id}',
                     headers={
                         'User-Agent': 'Mozilla/5.0'
                         ' (Windows NT 10.0; Win64; x64; rv:89.0)'
@@ -233,11 +234,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
             response = await try_for_times_async(  # 尝试三次
                 3,
                 lambda: client.post(
-                    f'https://api.bgm.tv/subject/'
-                    f'{bangumi[0]}/update/{eps_count}',
-                    data={
-                        'status': {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
-                    },
+                    f'https://api.bgm.tv/subject/{bgm_id}/update/{eps_count}',
                     headers={
                         'User-Agent': 'Mozilla/5.0'
                         ' (Windows NT 10.0; Win64; x64; rv:89.0)'
@@ -252,9 +249,9 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         response = await try_for_times_async(  # 尝试三次
             3,
             lambda: client.post(
-                f'https://api.bgm.tv/collection/{bangumi[0]}/update',
+                f'https://api.bgm.tv/collection/{bgm_id}/update',
                 data={
-                    'status': {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
+                    'status': status
                 },
                 headers={
                     'User-Agent': 'Mozilla/5.0'
@@ -269,18 +266,27 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
 
     async def update_bgm_bangumi_data(auth_data):
         '''更新 Bangumi 动画数据'''
-        nonlocal bangumi_remaining, bangumi_processed, bangumi_failed
+        nonlocal bangumi_remaining, bangumi_processed
+        nonlocal bangumi_failed, bangumi_failed_count
         nonlocal get_bili_bangumi_data_task
         async with AsyncClient() as client:
             while not get_bili_bangumi_data_task.done:
                 while len(bangumi_remaining) > 0:
                     bangumi = bangumi_remaining.popleft()
-                    try:
-                        await update_one_bgm_bangumi_data(
-                            client, auth_data, bangumi
-                        )
-                    except (RequestError, HTTPStatusError):
+                    if bangumi[0] in bili2bgm_map:
+                        try:
+                            await update_one_bgm_bangumi_data(
+                                client,
+                                auth_data,
+                                bili2bgm_map[bangumi[0]],
+                                {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
+                            )
+                        except (RequestError, HTTPStatusError):
+                            bangumi_failed.append(bangumi[0])
+                            bangumi_failed_count += 1
+                    else:
                         bangumi_failed.append(bangumi[0])
+                        bangumi_failed_count += 1
                     bangumi_processed += 1
                 yield
 
@@ -298,6 +304,14 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         get_bili_bangumi_data_task.done
         and update_bgm_bangumi_data_task.done
     ):
+        while len(bangumi_failed) > 0:
+            bangumi = bangumi_failed.popleft()
+            print('%50s' % '一部动画更新失败！')
+            print(f'  https://www.bilibili.com/bangumi/media/md{bangumi}/')
+            if bangumi in bili2bgm_map:
+                print(f'  https://bangumi.tv/subject/{bili2bgm_map[bangumi]}')
+            else:
+                print('  没有对应的 Bangumi 动画数据！')
         bili_status = '[Bilibili %d/%d %.1f%%]' % (
             bili_page_current - 1,
             bili_pages_total,
@@ -307,7 +321,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
             bangumi_processed,
             bangumi_total,
             bangumi_processed / bangumi_total,
-            len(bangumi_failed)
+            bangumi_failed_count
         )
         print('%50s' % (
             f'  {bili_status} -> {bgm_status}'
@@ -318,29 +332,6 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
             animation_points = 1
         yield
     print()
-    return bangumi_total, bangumi_failed
-
-
-def print_failure(bili2bgm_map, bangumi_data_raw, bangumi_failed):
-    '''打印失败数据'''
-    for i, bangumi in enumerate(bangumi_failed):
-        print(f'#{i}', end='')
-        for item in bangumi_data_raw['items']:
-            for site in item['sites']:
-                if site['site'] == 'bilibili' and int(site['id']) == bangumi:
-                    print(' %s' % item['title'])
-                    if 'zh-Hans' in item['titleTranslate']:
-                        print('（%s）' % item['titleTranslate']['zh-Hans'][0])
-                    break
-            else:
-                continue
-            break
-        print()
-        print(f'  https://www.bilibili.com/bangumi/media/md{bangumi}/')
-        if bili2bgm_map[bangumi] is not None:
-            print(f'  https://bangumi.tv/subject/{bili2bgm_map[bangumi]}')
-        else:
-            print('  没有对应的 Bangumi 动画数据！')
 
 
 def main():
@@ -351,17 +342,9 @@ def main():
     print('取得 Bangumi 授权...')
     bgm_auth_data = auth_bgm(APP_ID, APP_SECRET)
     print('获取 Bilibili 番剧数据并更新 Bangumi 动画数据...')
-    bangumi_total, bangumi_failed = get_event_loop().run_until_complete(
+    get_event_loop().run_until_complete(
         get_and_update(bili2bgm_map, bili_auth_data, BILI_UID, bgm_auth_data)
     )
-    print(
-        f'共 {bangumi_total} 部动画，'
-        f'成功更新 {bangumi_total - len(bangumi_failed)} 部，'
-        f'失败 {len(bangumi_failed)} 部！'
-    )
-    if len(bangumi_failed) > 0:
-        print('打印失败数据...')
-        print_failure(bili2bgm_map, bangumi_data_raw, bangumi_failed)
 
 
 if __name__ == '__main__':
