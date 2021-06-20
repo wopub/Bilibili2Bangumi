@@ -75,7 +75,9 @@ async def auth_bgm(app_id, app_secret):
             }
         )
     )
-    print_status('完成！')
-    return (
-        f'{bgm_auth_data_raw["token_type"]} {bgm_auth_data_raw["access_token"]}'
+    token = (
+        f'{bgm_auth_data_raw["token_type"]}'
+        f' {bgm_auth_data_raw["access_token"]}'
     )
+    print_status('完成！')
+    return token

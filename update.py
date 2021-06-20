@@ -102,7 +102,9 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                 response = await try_for_times_async(  # 尝试三次
                     3,
                     lambda: client.post(
-                        f'https://api.bgm.tv/subject/{bgm_id}/update/{eps_count}',
+                        f'https://api.bgm.tv'
+                        f'/subject/{bgm_id}/update/watched_eps',
+                        data={'watched_eps': eps_count},
                         headers={'Authorization': auth_data}
                     )
                 )
@@ -154,7 +156,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         print_status('等待更新单个 Bangumi 数据任务...')
         for task in update_one_bgm_data_tasks:
             await task
-        
+
         print_status('完成！')
 
     print_status('创建更新 Bangumi 数据任务 -> [update_bgm_data]')
@@ -171,12 +173,18 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         nonlocal animation_points
         while len(bangumi_failed) > 0:
             bangumi = bangumi_failed.popleft()
-            print_status('一部动画更新失败！', 2)
-            print_status(f'  Bilibili 编号：md{bangumi}/', 2)
             if bangumi in bili2bgm_map:
-                print_status(f'  Bangumi 编号：{bili2bgm_map[bangumi]}', 2)
+                print_status(
+                    f'** Bilibili 编号 md{bangumi}，'
+                    f'Bangumi 编号 {bili2bgm_map[bangumi]} 更新失败！',
+                    2
+                )
             else:
-                print_status('  没有对应的 Bangumi 动画数据！', 2)
+                print_status(
+                    f'** Bilibili 编号 md{bangumi}'
+                    f' 没有对应的 Bangumi 数据！',
+                    2
+                )
         bili_status = '[Bilibili %d/%d %.1f%%]' % (
             bili_processed_count,
             bili_total_count,
@@ -202,6 +210,6 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         and update_bgm_data_task.done()
     ):
         await print_progress()
-        await sleep(0)
+        await sleep(0.1)
     await print_progress()
     print()

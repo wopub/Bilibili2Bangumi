@@ -5,11 +5,16 @@ from inspect import stack
 
 from aiohttp import ClientError, ClientSession, TCPConnector
 
-# 每个站点限制同时开 10 个并发连接
-client = ClientSession(connector=TCPConnector(limit_per_host=10), headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
-    ' Gecko/20100101 Firefox/89.0'
-})
+from config import CONNECTION_LIMIT_PER_HOST
+
+client = ClientSession(
+    connector=TCPConnector(limit_per_host=CONNECTION_LIMIT_PER_HOST),
+    headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
+        ' Gecko/20100101 Firefox/89.0'
+    }
+)
+
 
 def print_status(status, depth=1, **kw):
     '''打印状态（包括当前函数名）并用空格填充'''
@@ -34,7 +39,7 @@ async def try_for_times_async(
     func: Callable[[], Coroutine],
     exception: Union[Exception, Tuple[Exception]] = ClientError
 ):
-    '''尝试多次（异步）'''
+    '''尝试多次'''
     tried_times = 1
     while True:
         try:
@@ -54,7 +59,7 @@ async def try_for_times_async_json(
         ClientError, JSONDecodeError
     )
 ):
-    '''尝试多次（异步）并转换成 JSON'''
+    '''尝试多次并转换成 JSON'''
     tried_times = 1
     while True:
         try:
