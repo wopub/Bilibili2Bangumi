@@ -1,10 +1,8 @@
 from webbrowser import open as webbrowser_open
 from asyncio import sleep
-from urllib.parse import urlparse, parse_qs
 
 from aiohttp import web
 from bilibili_api import Credential
-
 
 from utilities import print_status, client, try_for_times_async_json
 

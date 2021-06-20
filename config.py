@@ -12,5 +12,8 @@ BUVID3 = '你的 Bilibili buvid3'
 APP_ID = '你的 Bangumi App ID'
 APP_SECRET = '你的 Bangumi App Secret'
 
+# 自动打开更新失败的动画的 Bilibili 页面
+OPEN_FAILED_BANGUMI_BILI_PAGE = False
+
 # 每站点最大并发连接数（太多并发连接可能会导致 503）
 CONNECTION_LIMIT_PER_HOST = 15

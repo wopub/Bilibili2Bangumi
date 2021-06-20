@@ -1,11 +1,12 @@
 from asyncio import get_event_loop, sleep
 from collections import deque
 from math import ceil
+from webbrowser import open as webbrowser_open
 
 from aiohttp import ClientError
 from bilibili_api.user import User, BangumiType
 
-
+from config import OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
     client, print_status,
     try_for_times_async, try_for_times_async_json
@@ -185,6 +186,11 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                     f' 没有对应的 Bangumi 数据！',
                     2
                 )
+            if OPEN_FAILED_BANGUMI_BILI_PAGE:
+                webbrowser_open(
+                    f'https://www.bilibili.com/bangumi/media/md{bangumi}/'
+                )
+
         bili_status = '[Bilibili %d/%d %.1f%%]' % (
             bili_processed_count,
             bili_total_count,
