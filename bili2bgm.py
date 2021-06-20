@@ -7,6 +7,16 @@ from config import BILI_UID, SESSDATA, BILI_JCT, BUVID3, APP_ID, APP_SECRET
 
 
 async def main():
+    if BILI_UID == '你的 Bilibili UID':
+        print_status('** 未指定 Bilibili UID！')
+        raise RuntimeError('未指定 Bilibili UID！')
+    if (
+        APP_ID == '你的 Bangumi App ID'
+        and APP_SECRET == '你的 Bangumi App Secret'
+    ):
+        print_status('** 未指定 Bangumi 授权设置！')
+        raise RuntimeError('未指定 Bangumi 授权设置！')
+
     loop = get_event_loop()
 
     print_status('创建构造编号映射任务 -> [get_bili2bgm_map]')

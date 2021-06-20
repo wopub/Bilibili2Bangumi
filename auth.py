@@ -20,7 +20,7 @@ async def auth_bili(sessdata, bili_jct, buvid3):
             sessdata=sessdata, bili_jct=bili_jct, buvid3=buvid3
         )
     else:
-        print_status('未指定 Bilibili 授权！')
+        print_status('未指定 Bilibili 授权设置！')
         credential = Credential()
     print_status('完成！')
     return credential
@@ -28,7 +28,6 @@ async def auth_bili(sessdata, bili_jct, buvid3):
 
 async def auth_bgm(app_id, app_secret):
     '''取得 Bangumi 授权'''
-
     code = None
 
     async def handler(request):
@@ -41,7 +40,7 @@ async def auth_bgm(app_id, app_secret):
             'Bangumi 授权请求已接受，请关闭此页面。'
             '</h1></body></html>'
         )
-    
+
     print_status('创建 Bangumi 授权请求处理器...')
     app = web.Application()
     app.add_routes([web.get('/', handler)])
@@ -57,7 +56,7 @@ async def auth_bgm(app_id, app_secret):
 
     print_status('等待 Bangumi 授权请求...')
     while code is None:
-        await sleep(0)
+        await sleep(0.001)
     await site.stop()
     await runner.shutdown()
 

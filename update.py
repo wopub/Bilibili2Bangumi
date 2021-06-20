@@ -150,7 +150,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         print_status('创建更新单个 Bangumi 数据任务...')
         while not get_bili_data_task.done():
             await check_and_update_bgm_data(auth_data)
-            await sleep(0)
+            await sleep(0.001)
         await check_and_update_bgm_data(auth_data)
 
         print_status('等待更新单个 Bangumi 数据任务...')
@@ -165,7 +165,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
     print_status('等待任务...')
     print_status('[Bilibili 0/?]', end='\r')
     while bili_total_count is None:
-        await sleep(0)
+        await sleep(0.001)
 
     animation_points = 1
 
