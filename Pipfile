@@ -5,7 +5,7 @@ name = 'pypi'
 
 [packages]
 bilibili-api = '>=5'
-httpx = '==0.18.*'
+aiohttp = '>=3.7'
 
 [dev-packages]
 
