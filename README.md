@@ -1,4 +1,4 @@
-# Bilibili2Bangumi
+# Bilibili2Bangumi ![GitHub](https://img.shields.io/github/license/wopub/Bilibili2Bangumi)
 
 将 [Bilibili](https://www.bilibili.com/) 已看过的动画迁移至 [Bangumi](https://bgm.tv/)。
 
@@ -47,7 +47,7 @@ pipenv run python bili2bgm.py
    
    在 `config.py` 中填入需要迁移用户的 `Bilibili UID`。
    
-   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://github.com/Passkou/bilibili-api/blob/main/README.md#%E8%8E%B7%E5%8F%96-sessdata-%E5%92%8C-csrf)。
+   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
    
    获取后在 `config.py` 中填入 `SESSDATA`、`BILI_JCT` 和 `BUVID3` 信息。
 
