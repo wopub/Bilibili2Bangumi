@@ -34,22 +34,27 @@ def print_exception(e: Exception, tried_times: int, times: int) -> bool:
     return True
 
 
-async def try_for_times_async(
+async def try_for_times_async_chain(
     times: int,
     func: Callable[[], Coroutine],
+    *func_chain: Callable[[], Coroutine],
     exception: Union[Exception, Tuple[Exception]] = ClientError
 ):
     '''尝试多次'''
     tried_times = 1
     while True:
         try:
-            return await func()
+            result = await func()
+            for f in func_chain:
+                result = await f(result)
         except exception as e:
             if print_exception(e, tried_times, times):
                 tried_times += 1
                 continue
             else:
                 raise
+        else:
+            return result
 
 
 async def try_for_times_async_json(
@@ -60,16 +65,12 @@ async def try_for_times_async_json(
     )
 ):
     '''尝试多次并转换成 JSON'''
-    tried_times = 1
-    while True:
-        try:
-            return await (await func()).json()
-        except exception as e:
-            if print_exception(e, tried_times, times):
-                tried_times += 1
-                continue
-            else:
-                raise
+    return await try_for_times_async_chain(
+        times,
+        func,
+        lambda r: r.json(),
+        exception=exception
+    )
 
 
 async def get_bili2bgm_map():

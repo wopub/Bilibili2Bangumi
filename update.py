@@ -9,7 +9,7 @@ from bilibili_api.user import User, BangumiType
 from config import OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
     client, print_status,
-    try_for_times_async, try_for_times_async_json
+    try_for_times_async_chain, try_for_times_async_json
 )
 
 
@@ -34,7 +34,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
             '''获取单个 Bilibili 番剧数据'''
             nonlocal bili_processed_count, bili_total_count
             nonlocal bangumi_total, bangumi_remaining
-            bangumi_data = await try_for_times_async(  # 尝试三次
+            bangumi_data = await try_for_times_async_chain(  # 尝试三次
                 3,
                 lambda: user.get_subscribed_bangumis(
                     page,
@@ -49,22 +49,12 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                 bangumi_data['list']
             ))
             bili_processed_count += 1
+            if page == 1:
+                return ceil(bangumi_data['total'] / 15)  # 计算并返回总页数
 
         user = User(uid, auth_data)
         print_status('获取第一页 Bilibili 番剧数据...')
-        bangumi_data = await try_for_times_async(  # 尝试三次
-            3,
-            lambda: user.get_subscribed_bangumis(1, BangumiType.BANGUMI)
-        )
-        bili_total_count = ceil(bangumi_data['total'] / 15)
-        bangumi_total += len(bangumi_data['list'])
-        bangumi_remaining.extend(map(
-            lambda bangumi: (
-                bangumi['media_id'], bangumi['follow_status']
-            ),
-            bangumi_data['list']
-        ))
-        bili_processed_count += 1
+        bili_total_count = await get_one_bili_data(user, 1)
 
         print_status('创建并等待获取单个 Bilibili 数据任务...')
         for task in [
@@ -100,7 +90,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                 )
                 eps_count = subject_data['eps_count']
                 # 更新分集进度
-                response = await try_for_times_async(  # 尝试三次
+                response = await try_for_times_async_chain(  # 尝试三次
                     3,
                     lambda: client.post(
                         f'https://api.bgm.tv'
@@ -111,7 +101,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                 )
                 response.raise_for_status()
             # 更新收藏
-            response = await try_for_times_async(  # 尝试三次
+            response = await try_for_times_async_chain(  # 尝试三次
                 3,
                 lambda: client.post(
                     f'https://api.bgm.tv/collection/{bgm_id}/update',
