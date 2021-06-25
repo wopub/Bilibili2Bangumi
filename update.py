@@ -1,14 +1,15 @@
-from asyncio import get_event_loop, sleep
+from asyncio import get_event_loop, sleep, wait
 from collections import deque
 from math import ceil
 from webbrowser import open as webbrowser_open
 
 from aiohttp import ClientError
 from bilibili_api.user import User, BangumiType
+from bilibili_api.bangumi import get_meta
 
-from config import OPEN_FAILED_BANGUMI_BILI_PAGE
+from config import READ_ONLY, OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
-    client, print_status,
+    client, print_debug, print_status,
     try_for_times_async_chain, try_for_times_async_json
 )
 
@@ -89,28 +90,31 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
                     )
                 )
                 eps_count = subject_data['eps_count']
-                # 更新分集进度
+                print_debug(f'更新分集进度 @ {bgm_id} -> {eps_count} ...')
+                if not READ_ONLY:
+                    response = await try_for_times_async_chain(  # 尝试三次
+                        3,
+                        lambda: client.post(
+                            f'https://api.bgm.tv'
+                            f'/subject/{bgm_id}/update/watched_eps',
+                            data={'watched_eps': eps_count},
+                            headers={'Authorization': auth_data}
+                        )
+                    )
+                    response.raise_for_status()
+            print_debug(f'更新收藏 @ {bgm_id} -> {status} ...')
+            if not READ_ONLY:
                 response = await try_for_times_async_chain(  # 尝试三次
                     3,
                     lambda: client.post(
-                        f'https://api.bgm.tv'
-                        f'/subject/{bgm_id}/update/watched_eps',
-                        data={'watched_eps': eps_count},
+                        f'https://api.bgm.tv/collection/{bgm_id}/update',
+                        data={'status': status},
                         headers={'Authorization': auth_data}
                     )
                 )
                 response.raise_for_status()
-            # 更新收藏
-            response = await try_for_times_async_chain(  # 尝试三次
-                3,
-                lambda: client.post(
-                    f'https://api.bgm.tv/collection/{bgm_id}/update',
-                    data={'status': status},
-                    headers={'Authorization': auth_data}
-                )
-            )
-            response.raise_for_status()
             bangumi_processed_count += 1
+            print_debug(f'完成 @ {bgm_id}！')
 
         update_one_bgm_data_tasks = deque()
 
@@ -121,12 +125,15 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
             nonlocal update_one_bgm_data_tasks, loop
             while len(bangumi_remaining) > 0:
                 bangumi = bangumi_remaining.popleft()
-                if bangumi[0] in bili2bgm_map:
+                if (
+                    bangumi[0] in bili2bgm_map
+                    and bili2bgm_map[bangumi[0]][0] is not None
+                ):
                     try:
                         update_one_bgm_data_tasks.append(
                             loop.create_task(update_one_bgm_data(
                                 auth_data,
-                                bili2bgm_map[bangumi[0]],
+                                bili2bgm_map[bangumi[0]][0],
                                 {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
                             ))
                         )
@@ -145,8 +152,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         await check_and_update_bgm_data(auth_data)
 
         print_status('等待更新单个 Bangumi 数据任务...')
-        for task in update_one_bgm_data_tasks:
-            await task
+        await wait(update_one_bgm_data_tasks)
 
         print_status('完成！')
 
@@ -159,22 +165,40 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         await sleep(0.001)
 
     animation_points = 1
+    print_unknown_tasks = deque()
 
-    async def print_progress():
-        nonlocal animation_points
+    async def print_progress(bili_auth_data):
+        nonlocal bili2bgm_map, animation_points
+        nonlocal print_unknown_tasks
+
+        async def print_unknown(bangumi, auth_data):
+            nonlocal bili2bgm_map
+            bangumi_meta = await get_meta(bangumi, auth_data)
+            print_status(
+                f'** {bangumi_meta["media"]["title"]}'
+                f'（Bilibili 编号 md{bangumi}）没有对应的数据！'
+            )
+
         while len(bangumi_failed) > 0:
             bangumi = bangumi_failed.popleft()
             if bangumi in bili2bgm_map:
-                print_status(
-                    f'** Bilibili 编号 md{bangumi}，'
-                    f'Bangumi 编号 {bili2bgm_map[bangumi]} 更新失败！',
-                    2
-                )
+                if bili2bgm_map[bangumi][0] is not None:
+                    print_status(
+                        f'** {bili2bgm_map[bangumi][1]}'
+                        f'（Bilibili 编号 md{bangumi}，'
+                        f'Bangumi 编号 {bili2bgm_map[bangumi][0]}）更新失败！'
+                    )
+                else:
+                    print_status(
+                        f'** {bili2bgm_map[bangumi][1]}'
+                        f'（Bilibili 编号 md{bangumi}）'
+                        f'没有对应的 Bangumi 数据！'
+                    )
             else:
-                print_status(
-                    f'** Bilibili 编号 md{bangumi}'
-                    f' 没有对应的 Bangumi 数据！',
-                    2
+                print_unknown_tasks.append(
+                    loop.create_task(
+                        print_unknown(bangumi, bili_auth_data)
+                    )
                 )
             if OPEN_FAILED_BANGUMI_BILI_PAGE:
                 webbrowser_open(
@@ -205,7 +229,9 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         get_bili_data_task.done()
         and update_bgm_data_task.done()
     ):
-        await print_progress()
+        await print_progress(bili_auth_data)
         await sleep(0.1)
-    await print_progress()
+    await print_progress(bili_auth_data)
+    await wait(print_unknown_tasks)
+    await print_progress(bili_auth_data)
     print()

@@ -5,7 +5,7 @@ from inspect import stack
 
 from aiohttp import ClientError, ClientSession, TCPConnector
 
-from config import CONNECTION_LIMIT_PER_HOST
+from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
 
 client = ClientSession(
     connector=TCPConnector(limit_per_host=CONNECTION_LIMIT_PER_HOST),
@@ -16,21 +16,26 @@ client = ClientSession(
 )
 
 
-def print_status(status, depth=1, **kw):
+def print_status(status, depth=0, **kw):
     '''打印状态（包括当前函数名）并用空格填充'''
-    print('%-80s' % ('[%s] %s' % (stack()[depth].function, status)), **kw)
+    print('%-80s' % ('[%s] %s' % (stack()[depth + 1].function, status)), **kw)
+
+def print_debug(status, depth=0, **kw):
+    '''打印调试状态（包括当前函数名）并用空格填充'''
+    if PRINT_DEBUG_INFORMATION:
+        print_status('[debug] ' + status, depth + 1, **kw)
 
 
 def print_exception(e: Exception, tried_times: int, times: int) -> bool:
     '''异常被引发时打印异常并判断是否退出（True：继续，False：退出）'''
-    print_status('** 异常被引发！', 3)
-    print_status('** %s' % format_exception_only(type(e), e)[-1], 3, end='')
+    print_status('** 异常被引发！', 2)
+    print_status('** %s' % format_exception_only(type(e), e)[-1], 2, end='')
     if tried_times == times:
-        print_status(f'** {tried_times} 次尝试均失败，退出！', 3)
+        print_status(f'** {tried_times} 次尝试均失败，退出！', 2)
         return False
-    print_status(f'** 第 {tried_times} 次尝试失败！', 3)
+    print_status(f'** 第 {tried_times} 次尝试失败！', 2)
     tried_times += 1
-    print_status(f'** 进行第 {tried_times} 次尝试...', 3)
+    print_status(f'** 进行第 {tried_times} 次尝试...', 2)
     return True
 
 
@@ -74,7 +79,7 @@ async def try_for_times_async_json(
 
 
 async def get_bili2bgm_map():
-    '''构造 Bilibili 编号（media） -> Bangumi 编号映射'''
+    '''构造 Bilibili 编号（media） -> (Bangumi 编号, 标题) 映射'''
     BANGUMI_DATA_LINK = \
         'https://cdn.jsdelivr.net/npm/bangumi-data@0.3/dist/data.json'
     print_status('请求动画数据...')
@@ -82,10 +87,14 @@ async def get_bili2bgm_map():
         3,
         lambda: client.get(BANGUMI_DATA_LINK)
     )
-    print_status('构造编号映射...')
+    print_status('构造映射...')
     bili2bgm_map = {}
     for bangumi in bangumi_data['items']:
         bili_id = bgm_id = None
+        if 'zh-Hans' in bangumi['titleTranslate']:
+            title = bangumi['titleTranslate']['zh-Hans'][0]
+        else:
+            title = bangumi['title']
         for site in bangumi['sites']:
             name = site['site']
             if name == 'bilibili':
@@ -95,7 +104,8 @@ async def get_bili2bgm_map():
             else:
                 continue
             if bili_id is not None and bgm_id is not None:
-                bili2bgm_map[bili_id] = bgm_id
                 break
+        if bili_id is not None:
+            bili2bgm_map[bili_id] = (bgm_id, title)
     print_status('完成！')
     return bili2bgm_map
