@@ -37,23 +37,27 @@ $ pipenv install --pypi-mirror https://pypi.tuna.tsinghua.edu.cn/simple
 
 按下述修改完配置文件后，运行程序：
    
+```sh
+$ pipenv run python bili2bgm.py
 ```
-pipenv run python bili2bgm.py
-```
+
+程序运行时会显示当前进度和因各种原因而迁移失败的数据。
 
 ### 修改配置文件 `config.py`
 
-1. 配置 Bilibili-API ：
+1. bilibili_api 授权设置：
    
    在 `config.py` 中填入需要迁移用户的 `Bilibili UID`。
    
-   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
+   如果要迁移 **隐私设置未公开** 的 Bilibili 追番数据，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
    
    获取后在 `config.py` 中填入 `SESSDATA`、`BILI_JCT` 和 `BUVID3` 信息。
 
+   **注意，请不要泄露这些信息给他人，否则你的账号将可能遭受被盗的风险！**
+
 2. Bangumi API OAuth2 授权配置:
    
-   由于 [bangumi-api](https://github.com/bangumi/api/blob/master/docs-raw/How-to-Auth.md) 只提供 Oauth2 授权码方式，需获取并填入 `App ID` 与 `App Secret`：
+   由于 [Bangumi API](https://github.com/bangumi/api/blob/master/docs-raw/How-to-Auth.md) 只提供 Oauth2 授权码方式，需获取并填入 `App ID` 与 `App Secret`：
    
    1. 在 [Bangumi 开发平台](https://bgm.tv/dev/app) 中创建新应用，如下图
    
