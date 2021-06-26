@@ -41,6 +41,8 @@ $ pipenv install --pypi-mirror https://pypi.tuna.tsinghua.edu.cn/simple
 $ pipenv run python bili2bgm.py
 ```
 
+程序运行时会显示当前进度和因各种原因而迁移失败的数据。
+
 ### 修改配置文件 `config.py`
 
 1. bilibili_api 授权设置：
