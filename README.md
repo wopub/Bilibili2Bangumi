@@ -1,6 +1,6 @@
 # Bilibili2Bangumi ![GitHub](https://img.shields.io/github/license/wopub/Bilibili2Bangumi)
 
-将 [Bilibili](https://www.bilibili.com/) 已看过的动画迁移至 [Bangumi](https://bgm.tv/)。
+将 [Bilibili](https://www.bilibili.com/) 订阅动画迁移至 [Bangumi](https://bgm.tv/)，并保留原追番状态。
 
 欢迎 PR。
 
