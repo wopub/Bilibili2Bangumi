@@ -49,7 +49,7 @@ $ pipenv run python bili2bgm.py
    
    在 `config.py` 中填入需要迁移用户的 `Bilibili UID`。
    
-   如果 Bilibili 个人隐私设置为 **不公开** 番剧观看信息，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
+   如果要迁移 **隐私设置未公开** 的 Bilibili 追番数据，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
    
    获取后在 `config.py` 中填入 `SESSDATA`、`BILI_JCT` 和 `BUVID3` 信息。
 

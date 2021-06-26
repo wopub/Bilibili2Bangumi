@@ -7,6 +7,7 @@ from webbrowser import open as webbrowser_open
 from aiohttp import ClientError
 from bilibili_api.user import User, BangumiType
 from bilibili_api.bangumi import get_meta
+from bilibili_api.exceptions import ResponseCodeException
 
 from config import READ_ONLY, OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
@@ -40,7 +41,14 @@ async def get_one_bili_data(data: SimpleNamespace, page: int):
 async def get_bili_data(data: SimpleNamespace):
     '''获取 Bilibili 追番数据'''
     print_debug('获取第一页 Bilibili 追番数据...')
-    data.bili_total_count = await get_one_bili_data(data, 1)
+    try:
+        data.bili_total_count = await get_one_bili_data(data, 1)
+    except ResponseCodeException:
+        print_status(
+            '** Bilibili 授权设置不正确，无法读取隐私设置'
+            '未公开的 Bilibili 追番数据！'
+        )
+        exit(1)
 
     print_debug('创建并等待获取单个 Bilibili 追番数据任务...')
     await gather(*(

@@ -9,13 +9,13 @@ from config import BILI_UID, SESSDATA, BILI_JCT, BUVID3, APP_ID, APP_SECRET
 async def main():
     if BILI_UID == '你的 Bilibili UID':
         print_status('** 未指定 Bilibili UID！')
-        raise KeyboardInterrupt()
+        exit(1)
     if (
         APP_ID == '你的 Bangumi App ID'
         and APP_SECRET == '你的 Bangumi App Secret'
     ):
         print_status('** 未指定 Bangumi 授权设置！')
-        raise KeyboardInterrupt()
+        exit(1)
 
     loop = get_event_loop()
 
@@ -44,7 +44,10 @@ if __name__ == '__main__':
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         print('\n已取消！')
+    except SystemExit:
+        print('\n失败！')
+        raise
     else:
-        print('完成！')
+        print('\n完成！')
     finally:
         loop.run_until_complete(client.close())
