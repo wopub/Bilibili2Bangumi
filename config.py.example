@@ -17,3 +17,9 @@ OPEN_FAILED_BANGUMI_BILI_PAGE = False
 
 # 每站点最大并发连接数（太多并发连接可能会导致 503）
 CONNECTION_LIMIT_PER_HOST = 15
+
+# 打印调试信息，调试用
+PRINT_DEBUG_INFORMATION = False
+
+# 不实际更新动画进度和收藏，调试用
+READ_ONLY = False
