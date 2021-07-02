@@ -14,8 +14,11 @@
 $ git clone https://github.com/wopub/Bilibili2Bangumi.git
 $ cd Bilibili2Bangumi
 ```
+### 依赖安装
 
-如果没有安装包管理器 `pipenv` 就安装它：
+#### Pipenv(推荐)
+
+如果没有安装包管理器 [`pipenv`](https://pipenv.pypa.io/en/latest/) ，请安装：
 
 ```sh
 $ pip install pipenv
@@ -33,6 +36,12 @@ $ pipenv install
 $ pipenv install --pypi-mirror https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+#### Pip
+
+```sh
+$ pip install -r requirements.txt
+```
+
 ## 使用
 
 按下述修改完配置文件后，运行程序：
@@ -42,6 +51,8 @@ pipenv run python bili2bgm.py
 ```
 
 ### 修改配置文件 `config.py`
+
+将仓库根目录下 `config.py.example` 修改为 `config.py`。之后按下述配置参数。
 
 1. 配置 Bilibili-API ：
    
