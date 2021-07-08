@@ -92,7 +92,7 @@ async def update_one_bgm_data(
             lambda: client.post(
                 f'https://api.bgm.tv/collection/{bgm_id}/update',
                 data={'status': status},
-                headers={'Authorization': data.auth_data}
+                headers={'Authorization': data.bgm_auth_data}
             )
         )
         response.raise_for_status()
