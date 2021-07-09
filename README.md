@@ -14,6 +14,7 @@
 $ git clone https://github.com/wopub/Bilibili2Bangumi.git
 $ cd Bilibili2Bangumi
 ```
+
 ### 依赖安装
 
 #### Pipenv(推荐)
@@ -44,10 +45,18 @@ $ pip install -r requirements.txt
 
 ## 使用
 
-按下述修改完配置文件后，运行程序：
+先按下述修改完配置文件。
+
+如果使用了 Pipenv 来安装依赖则通过 Pipenv 运行：
    
 ```sh
 $ pipenv run python bili2bgm.py
+```   
+
+或者如果使用了 Pip 来安装依赖则直接运行：
+
+```sh
+$ python bili2bgm.py
 ```
 
 程序运行时会显示当前进度和因各种原因而迁移失败的数据。
@@ -86,3 +95,9 @@ $ pipenv run python bili2bgm.py
       ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
     
    3. 将 `App ID` 与 `App Secret` 填入 `config.py` 中。
+
+## 致谢
+
+- [bilibili-api](https://github.com/Passkou/bilibili-api)，GPL-3.0 许可证
+
+- [aiohttp](https://github.com/aio-libs/aiohttp.git)，Apache-2.0 许可证
