@@ -100,4 +100,4 @@ $ python bili2bgm.py
 
 - [bilibili-api](https://github.com/Passkou/bilibili-api)，GPL-3.0 许可证
 
-- [aiohttp](https://github.com/aio-libs/aiohttp.git)，Apache-2.0 许可证
+- [aiohttp](https://github.com/aio-libs/aiohttp)，Apache-2.0 许可证

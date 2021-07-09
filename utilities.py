@@ -1,14 +1,21 @@
-from typing import Any, Callable, Coroutine, Optional, Union, Tuple, Type
+from re import L
+from typing import Any, Callable, Coroutine, Union, Tuple, Type
 from traceback import format_exception_only
 from json.decoder import JSONDecodeError
 from inspect import stack
+from asyncio import get_event_loop
 
 from aiohttp import ClientError, ClientSession, TCPConnector
 
 from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
 
+loop = get_event_loop()
+
 client = ClientSession(
-    connector=TCPConnector(limit_per_host=CONNECTION_LIMIT_PER_HOST),
+    connector=TCPConnector(
+        limit_per_host=CONNECTION_LIMIT_PER_HOST,
+        loop=loop
+    ),
     headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
         ' Gecko/20100101 Firefox/89.0'

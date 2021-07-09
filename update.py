@@ -1,4 +1,4 @@
-from asyncio import get_event_loop, sleep, gather
+from asyncio import sleep, gather
 from collections import deque
 from types import SimpleNamespace
 from math import ceil
@@ -11,7 +11,7 @@ from bilibili_api.exceptions import ResponseCodeException
 
 from config import READ_ONLY, OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
-    client, print_debug, print_status,
+    loop, client, print_debug, print_status,
     try_for_times_async_chain, try_for_times_async_json
 )
 
@@ -52,7 +52,7 @@ async def get_bili_data(data: SimpleNamespace):
 
     print_debug('创建并等待获取单个 Bilibili 追番数据任务...')
     await gather(*(
-        data.loop.create_task(get_one_bili_data(data, page))
+        loop.create_task(get_one_bili_data(data, page))
         for page in range(2, data.bili_total_count + 1)
     ))
     print_debug('完成！')
@@ -110,7 +110,7 @@ async def check_and_update_bgm_data(data: SimpleNamespace):
         ):
             try:
                 data.update_one_bgm_data_tasks.append(
-                    data.loop.create_task(update_one_bgm_data(
+                    loop.create_task(update_one_bgm_data(
                         data,
                         data.bili2bgm_map[bangumi[0]][0],
                         {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
@@ -167,7 +167,7 @@ async def print_progress(data: SimpleNamespace):
                 )
         else:
             data.print_unknown_tasks.append(
-                data.loop.create_task(
+                loop.create_task(
                     print_unknown(data, bangumi)
                 )
             )
@@ -215,15 +215,14 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
         get_bili_data_task=None,
         update_bgm_data_task=None,
         update_one_bgm_data_tasks=deque(),
-        print_unknown_tasks=deque(),
-        loop=get_event_loop()
+        print_unknown_tasks=deque()
     )
 
     print_debug('创建获取 Bilibili 数据任务 -> [get_bili_data]')
-    data.get_bili_data_task = data.loop.create_task(get_bili_data(data))
+    data.get_bili_data_task = loop.create_task(get_bili_data(data))
 
     print_debug('创建更新 Bangumi 数据任务 -> [update_bgm_data]')
-    data.update_bgm_data_task = data.loop.create_task(update_bgm_data(data))
+    data.update_bgm_data_task = loop.create_task(update_bgm_data(data))
 
     print_debug('等待任务...')
 

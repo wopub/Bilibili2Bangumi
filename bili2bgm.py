@@ -1,6 +1,4 @@
-from asyncio import get_event_loop
-
-from utilities import client, print_debug, print_status, get_bili2bgm_map
+from utilities import loop, client, print_debug, print_status, get_bili2bgm_map
 from auth import auth_bili, auth_bgm
 from update import get_and_update
 from config import BILI_UID, SESSDATA, BILI_JCT, BUVID3, APP_ID, APP_SECRET
@@ -16,8 +14,6 @@ async def main():
     ):
         print_status('** 未指定 Bangumi 授权设置！')
         exit(1)
-
-    loop = get_event_loop()
 
     print_debug('创建构造编号映射任务 -> [get_bili2bgm_map]')
     get_bili2bgm_map_task = loop.create_task(get_bili2bgm_map())
@@ -39,7 +35,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    loop = get_event_loop()
     try:
         loop.run_until_complete(main())
     except KeyboardInterrupt:
