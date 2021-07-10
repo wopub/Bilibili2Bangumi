@@ -63,20 +63,22 @@ async def update_one_bgm_data(
     bgm_id: int, status: str
 ):
     '''更新单个 Bangumi 动画数据'''
+    print_debug(f'开始更新 @ {bgm_id} -> {status} ...')
     update_flag = True
     if SKIP_COLLECTED:
         # 获取当前收藏状态
-        response = await try_for_times_async_chain(  # 尝试三次
+        collection_status_json = await try_for_times_async_json(  # 尝试三次
             3,
             lambda: client.get(
                 f'https://api.bgm.tv/collection/{bgm_id}',
                 headers={'Authorization': data.bgm_auth_data}
             )
         )
-        if response.status == 200:
-            collection_status = (await response.json())["status"]["type"]
-            if collection_status == status:
-                update_flag = False
+        if (
+            'status' in collection_status_json
+            and collection_status_json['status']['type'] == status
+        ):
+            update_flag = False
 
     if update_flag:
         if status == 'collect':  # 看过 -> 更新分集进度
