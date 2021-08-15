@@ -40,20 +40,16 @@ def print_exception(
     e: Exception, tried_times: int, times: int, depth: int = 0
 ) -> bool:
     '''异常被引发时打印异常并判断是否退出（True：继续，False：退出）'''
-    if tried_times == times:
+    if tried_times >= times:
         print_status('** 异常被引发！')
-        print_status('** %s' % format_exception_only(type(e), e)[-1], end='')
+        print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
         print_status(f'** {tried_times} 次尝试均失败，退出！')
         return False
     else:
-        print_debug('** 异常被引发！', depth + 1)
-        print_debug(
-            '** %s' % format_exception_only(type(e), e)[-1],
-            depth + 1, end=''
-        )
-        print_debug(f'** 第 {tried_times} 次尝试失败！', depth + 1)
-        tried_times += 1
-        print_debug(f'** 进行第 {tried_times} 次尝试...', depth + 1)
+        print_status('** 异常被引发！')
+        print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
+        print_status(f'** 第 {tried_times} 次尝试失败！')
+        print_status(f'** 进行第 {tried_times + 1} 次尝试...')
         return True
 
 
