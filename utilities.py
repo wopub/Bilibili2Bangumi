@@ -84,7 +84,7 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
             return await r.json()
         except ContentTypeError as e:
             print_exception(e, tried_times, times)
-            print_debug(url)
+            print_debug(f'GET {url}')
             print_debug(kw)
             try:
                 print_debug(await r.text())
@@ -108,7 +108,7 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
                 raise
         except (JSONDecodeError, ClientError) as e:
             print_exception(e, tried_times, times)
-            print_debug(url)
+            print_debug(f'GET {url}')
             print_debug(kw)
             try:
                 print_debug(await r.text())
@@ -133,7 +133,8 @@ async def try_post_json(
             return await r.json()
         except ContentTypeError as e:
             print_exception(e, tried_times, times)
-            print_debug(url)
+            print_debug(f'POST {url}')
+            print_debug(data)
             print_debug(kw)
             try:
                 print_debug(await r.text())
@@ -157,7 +158,8 @@ async def try_post_json(
                 raise
         except (JSONDecodeError, ClientError) as e:
             print_exception(e, tried_times, times)
-            print_debug(url)
+            print_debug(f'POST {url}')
+            print_debug(data)
             print_debug(kw)
             try:
                 print_debug(await r.text())
