@@ -98,6 +98,10 @@ $ python bili2bgm.py
 
 ## 致谢
 
+- [Bilibili](https://www.bilibili.com/) & [Bangumi](https://bgm.tv/)
+
+- [Bangumi-data](https://github.com/bangumi-data/bangumi-data)，CC-BY-4.0 许可证
+
 - [bilibili-api](https://github.com/Passkou/bilibili-api)，GPL-3.0 许可证
 
 - [aiohttp](https://github.com/aio-libs/aiohttp)，Apache-2.0 许可证
