@@ -1,5 +1,5 @@
 from asyncio import sleep, gather
-from collections import defaultdict, deque
+from collections import deque
 from types import SimpleNamespace
 from math import ceil
 from webbrowser import open as webbrowser_open
@@ -128,43 +128,55 @@ async def update_one_bgm_data(
                 if not READ_ONLY:
                     ep_info = await try_get_json(  # 尝试三次
                         3, client,
-                        f'https://api.bgm.tv//subject/{bgm_id}/ep',
+                        f'https://api.bgm.tv/subject/{bgm_id}/ep',
                         headers={'Authorization': data.bgm_auth_data}
                     )
-                    ep_id = list(map(
-                        lambda ep: str(ep['id']),
-                        filter(lambda ep: ep['type'] == 0, ep_info['eps'])
-                    ))
                     ep_id_raw = dict(map(
                         lambda ep: (ep['sort'], str(ep['id'])),
-                        ep_info['eps']
+                        filter(lambda ep: ep['type'] == 0, ep_info['eps'])
                     ))
-                    ep_id = deque()
-                    for i in range(1, eps_count + 1):
-                        if i in ep_id_raw:
-                            ep_id.append(ep_id_raw[i])
-                    result = await try_post_json(  # 尝试三次
+                    ep_watched_info = await try_get_json(  # 尝试三次
                         3, client,
-                        f'https://api.bgm.tv'
-                        f'/ep/{ep_id[-1]}/status/watched',
-                        data={
-                            'ep_id': ','.join(ep_id)
-                        },
+                        f'https://api.bgm.tv/user/'
+                        f'{data.bgm_user_id}/progress?subject_id={bgm_id}',
                         headers={'Authorization': data.bgm_auth_data}
                     )
-                    code = result['code']
-                    msg = result['error']
-                    print_debug(
-                        f'更新在看分集进度返回状态 {code} {msg} @ {bgm_id}'
-                    )
-                    if code > 400:  # 忽略重复更新时的 400 Bad Request
-                        print_status(
-                            f'** 更新在看分集进度返回状态'
-                            f' {code} {msg} @ {bgm_id}'
+                    ep_watched = dict(map(
+                        lambda ep: (str(ep['id']), ep['status']['id'] == 2),
+                        ep_watched_info['eps']
+                    ))
+                    ep_ids = deque()
+                    for i in range(1, eps_count + 1):
+                        if i in ep_id_raw:
+                            ep_id = ep_id_raw[i]
+                            if (
+                                ep_id not in ep_watched
+                                or not ep_watched[ep_id]
+                            ):
+                                ep_ids.append(ep_id)
+                    if len(ep_ids) > 0:
+                        result = await try_post_json(  # 尝试三次
+                            3, client,
+                            f'https://api.bgm.tv'
+                            f'/ep/{ep_ids[-1]}/status/watched',
+                            data={
+                                'ep_id': ','.join(ep_ids)
+                            },
+                            headers={'Authorization': data.bgm_auth_data}
                         )
-                        data.bangumi_failed_count += 1
-                        data.bangumi_processed_count += 1
-                        return
+                        code = result['code']
+                        msg = result['error']
+                        print_debug(
+                            f'更新在看分集进度返回状态 {code} {msg} @ {bgm_id}'
+                        )
+                        if code > 400:  # 忽略重复更新时的 400 Bad Request
+                            print_status(
+                                f'** 更新在看分集进度返回状态'
+                                f' {code} {msg} @ {bgm_id}'
+                            )
+                            data.bangumi_failed_count += 1
+                            data.bangumi_processed_count += 1
+                            return
             elif status == 'collect':
                 print_debug(f'更新看过分集进度 @ {bgm_id} -> {eps_count} ...')
                 if not READ_ONLY:
@@ -311,13 +323,16 @@ async def print_progress(data: SimpleNamespace):
         data.animation_points = 1
 
 
-async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
+async def get_and_update(
+    bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data, bgm_user_id
+):
     '''获取 Bilibili 番剧数据并更新 Bangumi 动画数据'''
     data = SimpleNamespace(
         bili2bgm_map=bili2bgm_map,
         user=User(bili_uid, bili_auth_data),
         bili_auth_data=bili_auth_data,
         bgm_auth_data=bgm_auth_data,
+        bgm_user_id=bgm_user_id,
         bili_processed_count=0,
         bili_total_count=None,
         bangumi_total=0,

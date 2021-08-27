@@ -27,11 +27,13 @@ async def main():
     print_debug('等待任务...')
     bili2bgm_map = await get_bili2bgm_map_task
     bili_auth_data = await auth_bili_task
-    bgm_auth_data = await auth_bgm_task
+    bgm_auth_data, bgm_user_id = await auth_bgm_task
 
     print_status('正在迁移...')
     print_debug('等待更新数据任务 -> [get_and_update]')
-    await get_and_update(bili2bgm_map, bili_auth_data, BILI_UID, bgm_auth_data)
+    await get_and_update(
+        bili2bgm_map, bili_auth_data, BILI_UID, bgm_auth_data, bgm_user_id
+    )
 
 
 if __name__ == '__main__':

@@ -82,4 +82,4 @@ async def auth_bgm(app_id, app_secret):
         f' {bgm_auth_data_raw["access_token"]}'
     )
     print_debug('完成！')
-    return token
+    return token, bgm_auth_data_raw['user_id']
