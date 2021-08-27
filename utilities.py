@@ -6,7 +6,8 @@ from asyncio import get_event_loop
 from time import sleep
 
 from aiohttp import (
-    ClientError, ClientSession, ClientResponseError, TCPConnector
+    ClientError, ClientSession, ClientResponseError, ContentTypeError,
+    TCPConnector
 )
 
 from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
@@ -92,6 +93,17 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
                 continue
             else:
                 raise
+        except ContentTypeError as e:
+            print_exception(e, tried_times, times)
+            try:
+                print_debug(await r.text())
+            except ClientError:
+                pass
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
         except (JSONDecodeError, ClientError) as e:
             print_exception(e, tried_times, times)
             if tried_times < times:
@@ -117,6 +129,17 @@ async def try_post_json(
                 sleep(0.5)  # 强行阻塞事件循环
             else:
                 print_status(f'** HTTP 状态 {e.status}')
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
+        except ContentTypeError as e:
+            print_exception(e, tried_times, times)
+            try:
+                print_debug(await r.text())
+            except ClientError:
+                pass
             if tried_times < times:
                 tried_times += 1
                 continue
