@@ -26,7 +26,7 @@ client = ClientSession(
 
 
 def print_status(status: str, **kw):
-    '''打印状态（包括当前函数名）并用空格填充'''
+    '''打印状态并用空格填充'''
     print('%-80s' % status, **kw)
 
 
@@ -89,10 +89,10 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
             return await r.json()
         except ClientResponseError as e:
             if e.status == 503:
-                print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
+                print_status('** HTTP 状态 503，别慌，稍等片刻即可')
                 sleep(0.5)  # 强行阻塞事件循环
             else:
-                print(f'** HTTP 状态 {e.status}')
+                print_status(f'** HTTP 状态 {e.status}')
             if tried_times < times:
                 tried_times += 1
                 continue
@@ -119,10 +119,10 @@ async def try_post_json(
             return await r.json()
         except ClientResponseError as e:
             if e.status == 503:
-                print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
+                print_status('** HTTP 状态 503，别慌，稍等片刻即可')
                 sleep(0.5)  # 强行阻塞事件循环
             else:
-                print(f'** HTTP 状态 {e.status}')
+                print_status(f'** HTTP 状态 {e.status}')
             if tried_times < times:
                 tried_times += 1
                 continue
