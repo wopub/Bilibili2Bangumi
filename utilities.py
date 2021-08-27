@@ -44,7 +44,7 @@ def print_exception(
     e: Exception, tried_times: int, times: int
 ) -> bool:
     '''异常被引发时打印异常'''
-    print_status('** 异常：%s' % format_exception_only(type(e), e)[-1], end='\r')
+    print_status('** 异常：%s' % format_exception_only(type(e), e)[-1], end='')
 
 
 async def try_for_times_async_chain(
@@ -82,6 +82,19 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
             r = await client.get(url, **kw)
             r.raise_for_status()
             return await r.json()
+        except ContentTypeError as e:
+            print_exception(e, tried_times, times)
+            print_debug(url)
+            print_debug(kw)
+            try:
+                print_debug(await r.text())
+            except ClientError:
+                pass
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
         except ClientResponseError as e:
             if e.status == 503:
                 print_status('** HTTP 状态 503，别慌，稍等片刻即可')
@@ -93,19 +106,14 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
                 continue
             else:
                 raise
-        except ContentTypeError as e:
+        except (JSONDecodeError, ClientError) as e:
             print_exception(e, tried_times, times)
+            print_debug(url)
+            print_debug(kw)
             try:
                 print_debug(await r.text())
             except ClientError:
                 pass
-            if tried_times < times:
-                tried_times += 1
-                continue
-            else:
-                raise
-        except (JSONDecodeError, ClientError) as e:
-            print_exception(e, tried_times, times)
             if tried_times < times:
                 tried_times += 1
                 continue
@@ -123,6 +131,19 @@ async def try_post_json(
             r = await client.post(url, data=data, **kw)
             r.raise_for_status()
             return await r.json()
+        except ContentTypeError as e:
+            print_exception(e, tried_times, times)
+            print_debug(url)
+            print_debug(kw)
+            try:
+                print_debug(await r.text())
+            except ClientError:
+                pass
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
         except ClientResponseError as e:
             if e.status == 503:
                 print_status('** HTTP 状态 503，别慌，稍等片刻即可')
@@ -134,19 +155,14 @@ async def try_post_json(
                 continue
             else:
                 raise
-        except ContentTypeError as e:
+        except (JSONDecodeError, ClientError) as e:
             print_exception(e, tried_times, times)
+            print_debug(url)
+            print_debug(kw)
             try:
                 print_debug(await r.text())
             except ClientError:
                 pass
-            if tried_times < times:
-                tried_times += 1
-                continue
-            else:
-                raise
-        except (JSONDecodeError, ClientError) as e:
-            print_exception(e, tried_times, times)
             if tried_times < times:
                 tried_times += 1
                 continue
