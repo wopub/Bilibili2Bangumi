@@ -42,14 +42,8 @@ def print_debug(status: str = '', depth: int = 0, **kw):
 def print_exception(
     e: Exception, tried_times: int, times: int
 ) -> bool:
-    '''异常被引发时打印异常并判断是否退出（True：继续，False：退出）'''
-    print_status('** 异常被引发！')
-    print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
-    if tried_times >= times:
-        print_status(f'** {tried_times} 次尝试均失败，退出！')
-    else:
-        print_status(f'** 第 {tried_times} 次尝试失败！')
-        print_status(f'** 进行第 {tried_times + 1} 次尝试...')
+    '''异常被引发时打印异常'''
+    print_status('** 异常：%s' % format_exception_only(type(e), e)[-1], end='\r')
 
 
 async def try_for_times_async_chain(
