@@ -92,7 +92,7 @@ async def try_get_json(times: int, client: ClientSession, url: str, **kw):
                 print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
                 sleep(0.5)  # 强行阻塞事件循环
             else:
-                print_exception(e, tried_times, times)
+                print(f'** HTTP 状态 {e.status}')
             if tried_times < times:
                 tried_times += 1
                 continue
@@ -122,7 +122,7 @@ async def try_post_json(
                 print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
                 sleep(0.5)  # 强行阻塞事件循环
             else:
-                print_exception(e, tried_times, times)
+                print(f'** HTTP 状态 {e.status}')
             if tried_times < times:
                 tried_times += 1
                 continue

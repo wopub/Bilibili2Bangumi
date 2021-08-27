@@ -97,7 +97,7 @@ async def update_one_bgm_data(
                     headers={'Authorization': data.bgm_auth_data}
                 ))['code']
                 if code != 200:
-                    print_status(f'** 返回状态为 {code}')
+                    print_status(f'** 返回状态 {code}')
         print_debug(f'更新收藏 @ {bgm_id} -> {status} ...')
         if not READ_ONLY:
             code = (await try_post_json(  # 尝试三次
@@ -107,7 +107,7 @@ async def update_one_bgm_data(
                 headers={'Authorization': data.bgm_auth_data}
             ))['code']
             if code != 200:
-                print_status(f'** 返回状态为 {code}')
+                print_status(f'** 返回状态 {code}')
     else:
         print_debug(f'跳过 @ {bgm_id} -> {status} ...')
     data.bangumi_processed_count += 1
