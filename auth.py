@@ -4,7 +4,7 @@ from asyncio import sleep
 from aiohttp import web
 from bilibili_api import Credential
 
-from utilities import print_debug, client, print_status, try_for_times_async_json
+from utilities import print_debug, client, print_status, try_post_json
 
 
 async def auth_bili(sessdata, bili_jct, buvid3):
@@ -66,18 +66,16 @@ async def auth_bgm(app_id, app_secret):
     print_status('正在尝试取得授权...')
 
     print_debug('请求 Bangumi 授权码...')
-    bgm_auth_data_raw = await try_for_times_async_json(  # 尝试五次
-        5,
-        lambda: client.post(
-            'https://bgm.tv/oauth/access_token',
-            data={
-                'grant_type': 'authorization_code',
-                'client_id': app_id,
-                'client_secret': app_secret,
-                'code': code,
-                'redirect_uri': 'http://localhost:3000'
-            }
-        )
+    bgm_auth_data_raw = await try_post_json(  # 尝试五次
+        5, client,
+        'https://bgm.tv/oauth/access_token',
+        data={
+            'grant_type': 'authorization_code',
+            'client_id': app_id,
+            'client_secret': app_secret,
+            'code': code,
+            'redirect_uri': 'http://localhost:3000'
+        }
     )
     token = (
         f'{bgm_auth_data_raw["token_type"]}'

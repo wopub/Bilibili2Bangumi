@@ -12,7 +12,7 @@ from bilibili_api.exceptions import ResponseCodeException
 from config import SKIP_COLLECTED, READ_ONLY, OPEN_FAILED_BANGUMI_BILI_PAGE
 from utilities import (
     loop, client, print_debug, print_status,
-    try_for_times_async_chain, try_for_times_async_json
+    try_for_times_async_chain, try_get_json, try_post_json
 )
 
 
@@ -67,12 +67,10 @@ async def update_one_bgm_data(
     update_flag = True
     if SKIP_COLLECTED:
         # 获取当前收藏状态
-        collection_status_json = await try_for_times_async_json(  # 尝试三次
-            3,
-            lambda: client.get(
-                f'https://api.bgm.tv/collection/{bgm_id}',
-                headers={'Authorization': data.bgm_auth_data}
-            )
+        collection_status_json = await try_get_json(  # 尝试三次
+            3, client,
+            f'https://api.bgm.tv/collection/{bgm_id}',
+            headers={'Authorization': data.bgm_auth_data}
         )
         if (
             'status' in collection_status_json
@@ -83,37 +81,33 @@ async def update_one_bgm_data(
     if update_flag:
         if status == 'collect':  # 看过 -> 更新分集进度
             # 获取分集总数
-            subject_data = await try_for_times_async_json(  # 尝试三次
-                3,
-                lambda: client.get(
-                    f'https://api.bgm.tv/subject/{bgm_id}',
-                    headers={'Authorization': data.bgm_auth_data}
-                )
+            subject_data = await try_get_json(  # 尝试三次
+                3, client,
+                f'https://api.bgm.tv/subject/{bgm_id}',
+                headers={'Authorization': data.bgm_auth_data}
             )
             eps_count = subject_data['eps_count']
             print_debug(f'更新分集进度 @ {bgm_id} -> {eps_count} ...')
             if not READ_ONLY:
-                response = await try_for_times_async_chain(  # 尝试三次
-                    3,
-                    lambda: client.post(
-                        f'https://api.bgm.tv'
-                        f'/subject/{bgm_id}/update/watched_eps',
-                        data={'watched_eps': eps_count},
-                        headers={'Authorization': data.bgm_auth_data}
-                    )
-                )
-                response.raise_for_status()
+                code = (await try_post_json(  # 尝试三次
+                    3, client,
+                    f'https://api.bgm.tv'
+                    f'/subject/{bgm_id}/update/watched_eps',
+                    data={'watched_eps': eps_count},
+                    headers={'Authorization': data.bgm_auth_data}
+                ))['code']
+                if code != 200:
+                    print_status(f'** 返回状态为 {code}')
         print_debug(f'更新收藏 @ {bgm_id} -> {status} ...')
         if not READ_ONLY:
-            response = await try_for_times_async_chain(  # 尝试三次
+            code = (await try_post_json(  # 尝试三次
                 3,
-                lambda: client.post(
-                    f'https://api.bgm.tv/collection/{bgm_id}/update',
-                    data={'status': status},
-                    headers={'Authorization': data.bgm_auth_data}
-                )
-            )
-            response.raise_for_status()
+                f'https://api.bgm.tv/collection/{bgm_id}/update',
+                data={'status': status},
+                headers={'Authorization': data.bgm_auth_data}
+            ))['code']
+            if code != 200:
+                print_status(f'** 返回状态为 {code}')
     else:
         print_debug(f'跳过 @ {bgm_id} -> {status} ...')
     data.bangumi_processed_count += 1
@@ -150,7 +144,7 @@ async def update_bgm_data(data: SimpleNamespace):
     print_debug('创建更新单个 Bangumi 数据任务...')
     while not data.get_bili_data_task.done():
         await check_and_update_bgm_data(data)
-        await sleep(0.001)
+        await sleep(0.01)
     await check_and_update_bgm_data(data)
 
     print_debug('等待更新单个 Bangumi 数据任务...')
@@ -247,7 +241,7 @@ async def get_and_update(bili2bgm_map, bili_auth_data, bili_uid, bgm_auth_data):
     print_debug('等待任务...')
 
     while data.bili_total_count is None:
-        await sleep(0.001)
+        await sleep(0.01)
 
     while not (
         data.get_bili_data_task.done()

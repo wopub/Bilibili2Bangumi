@@ -3,8 +3,11 @@ from traceback import format_exception_only
 from json.decoder import JSONDecodeError
 from inspect import stack
 from asyncio import get_event_loop
+from time import sleep
 
-from aiohttp import ClientError, ClientSession, TCPConnector
+from aiohttp import (
+    ClientError, ClientSession, ClientResponseError, TCPConnector
+)
 
 from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
 
@@ -37,20 +40,16 @@ def print_debug(status: str = '', depth: int = 0, **kw):
 
 
 def print_exception(
-    e: Exception, tried_times: int, times: int, depth: int = 0
+    e: Exception, tried_times: int, times: int
 ) -> bool:
     '''异常被引发时打印异常并判断是否退出（True：继续，False：退出）'''
+    print_status('** 异常被引发！')
+    print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
     if tried_times >= times:
-        print_status('** 异常被引发！')
-        print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
         print_status(f'** {tried_times} 次尝试均失败，退出！')
-        return False
     else:
-        print_status('** 异常被引发！')
-        print_status('** %s' % format_exception_only(type(e), e)[-1], end='\r')
         print_status(f'** 第 {tried_times} 次尝试失败！')
         print_status(f'** 进行第 {tried_times + 1} 次尝试...')
-        return True
 
 
 async def try_for_times_async_chain(
@@ -70,7 +69,8 @@ async def try_for_times_async_chain(
             for f in func_chain:
                 result = await f(result)
         except exception as e:
-            if print_exception(e, tried_times, times, depth + 1):
+            print_exception(e, tried_times, times)
+            if tried_times < times:
                 tried_times += 1
                 continue
             else:
@@ -79,22 +79,62 @@ async def try_for_times_async_chain(
             return result
 
 
-async def try_for_times_async_json(
-    times: int,
-    func: Callable[[], Coroutine],
-    exception: Union[Type[Exception], Tuple[Type[Exception], ...]] = (
-        ClientError, JSONDecodeError
-    ),
-    depth: int = 0
+async def try_get_json(times: int, client: ClientSession, url: str, **kw):
+    '''尝试 GET 多次并转换成 JSON'''
+    tried_times = 1
+    while True:
+        try:
+            r = await client.get(url, **kw)
+            r.raise_for_status()
+            return await r.json()
+        except ClientResponseError as e:
+            if e.status == 503:
+                print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
+                sleep(0.5)  # 强行阻塞事件循环
+            else:
+                print_exception(e, tried_times, times)
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
+        except (JSONDecodeError, ClientError) as e:
+            print_exception(e, tried_times, times)
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
+
+
+async def try_post_json(
+    times: int, client: ClientSession, url: str, *, data, **kw
 ):
-    '''尝试多次并转换成 JSON'''
-    return await try_for_times_async_chain(
-        times,
-        func,
-        lambda r: r.json(),
-        exception=exception,
-        depth=depth+1
-    )
+    '''尝试 POST 多次并转换成 JSON'''
+    tried_times = 1
+    while True:
+        try:
+            r = await client.post(url, data=data, **kw)
+            r.raise_for_status()
+            return await r.json()
+        except ClientResponseError as e:
+            if e.status == 503:
+                print('** HTTP 状态 503，服务暂时不可用，别慌，稍等片刻即可')
+                sleep(0.5)  # 强行阻塞事件循环
+            else:
+                print_exception(e, tried_times, times)
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
+        except (JSONDecodeError, ClientError) as e:
+            print_exception(e, tried_times, times)
+            if tried_times < times:
+                tried_times += 1
+                continue
+            else:
+                raise
 
 
 async def get_bili2bgm_map():
@@ -102,9 +142,8 @@ async def get_bili2bgm_map():
     BANGUMI_DATA_LINK = \
         'https://cdn.jsdelivr.net/npm/bangumi-data@0.3/dist/data.json'
     print_debug('请求动画数据...')
-    bangumi_data = await try_for_times_async_json(  # 尝试三次
-        3,
-        lambda: client.get(BANGUMI_DATA_LINK)
+    bangumi_data = await try_get_json(  # 尝试三次
+        3, client, BANGUMI_DATA_LINK
     )
     print_debug('构造映射...')
     bili2bgm_map = {}
