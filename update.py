@@ -9,11 +9,15 @@ from bilibili_api.user import User, BangumiType
 from bilibili_api.bangumi import get_meta
 from bilibili_api.exceptions import ResponseCodeException
 
-from config import SKIP_COLLECTED, READ_ONLY, OPEN_FAILED_BANGUMI_BILI_PAGE
+from config import (
+    PARSE_EPISODE_PROGRESS, SKIP_COLLECTED, READ_ONLY,
+    OPEN_FAILED_BANGUMI_BILI_PAGE
+)
 from utilities import (
     loop, client, print_debug, print_status,
     try_for_times_async_chain, try_get_json, try_post_json
 )
+from episode_progress import parse_episode_progress
 
 
 async def get_one_bili_data(data: SimpleNamespace, page: int):
@@ -29,7 +33,7 @@ async def get_one_bili_data(data: SimpleNamespace, page: int):
     data.bangumi_total += len(bangumi_data['list'])
     data.bangumi_remaining.extend(map(
         lambda bangumi: (
-            bangumi['media_id'], bangumi['follow_status']
+            bangumi['media_id'], bangumi['follow_status'], bangumi['progress']
         ),
         bangumi_data['list']
     ))
@@ -60,7 +64,7 @@ async def get_bili_data(data: SimpleNamespace):
 
 async def update_one_bgm_data(
     data: SimpleNamespace,
-    bgm_id: int, status: str
+    bgm_id: int, status: str, progress: str
 ):
     '''更新单个 Bangumi 动画数据'''
     print_debug(f'开始更新 @ {bgm_id} -> {status} ...')
@@ -72,14 +76,21 @@ async def update_one_bgm_data(
             f'https://api.bgm.tv/collection/{bgm_id}',
             headers={'Authorization': data.bgm_auth_data}
         )
-        if (
-            'status' in collection_status_json
-            and collection_status_json['status']['type'] == status
-        ):
-            update_flag = False
+        if 'status' in collection_status_json:
+            if collection_status_json['status']['type'] == status:
+                update_flag = False
+            if PARSE_EPISODE_PROGRESS and status == 'do':
+                eps_count = parse_episode_progress(progress)
+                if eps_count is not None:
+                    update_flag = True
 
     if update_flag:
-        if status == 'collect':  # 看过 -> 更新分集进度
+        update_watched_eps_flag = False
+        # 在看 -> 更新分集进度
+        if PARSE_EPISODE_PROGRESS and status == 'do' and eps_count is not None:
+            print_debug(f'更新在看分集进度 @ {bgm_id} -> {eps_count} ...')
+            update_watched_eps_flag = True
+        elif status == 'collect':  # 看过 -> 更新分集进度
             # 获取分集总数
             subject_data = await try_get_json(  # 尝试三次
                 3, client,
@@ -87,17 +98,18 @@ async def update_one_bgm_data(
                 headers={'Authorization': data.bgm_auth_data}
             )
             eps_count = subject_data['eps_count']
-            print_debug(f'更新分集进度 @ {bgm_id} -> {eps_count} ...')
-            if not READ_ONLY:
-                code = (await try_post_json(  # 尝试三次
-                    3, client,
-                    f'https://api.bgm.tv'
-                    f'/subject/{bgm_id}/update/watched_eps',
-                    data={'watched_eps': eps_count},
-                    headers={'Authorization': data.bgm_auth_data}
-                ))['code']
-                if code != 200:
-                    print_status(f'** 返回状态 {code}')
+            print_debug(f'更新看过分集进度 @ {bgm_id} -> {eps_count} ...')
+            update_watched_eps_flag = True
+        if (not READ_ONLY) and update_watched_eps_flag:
+            code = (await try_post_json(  # 尝试三次
+                3, client,
+                f'https://api.bgm.tv'
+                f'/subject/{bgm_id}/update/watched_eps',
+                data={'watched_eps': eps_count},
+                headers={'Authorization': data.bgm_auth_data}
+            ))['code']
+            if code != 200:
+                print_status(f'** 返回状态 {code}')
         print_debug(f'更新收藏 @ {bgm_id} -> {status} ...')
         if not READ_ONLY:
             code = (await try_post_json(  # 尝试三次
@@ -127,7 +139,8 @@ async def check_and_update_bgm_data(data: SimpleNamespace):
                     loop.create_task(update_one_bgm_data(
                         data,
                         data.bili2bgm_map[bangumi[0]][0],
-                        {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]]
+                        {1: 'wish', 2: 'do', 3: 'collect'}[bangumi[1]],
+                        bangumi[2]
                     ))
                 )
             except ClientError:

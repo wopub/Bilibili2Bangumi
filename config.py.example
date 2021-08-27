@@ -12,6 +12,10 @@ BUVID3: str = '你的 Bilibili buvid3'
 APP_ID: str = '你的 Bangumi App ID'
 APP_SECRET: str = '你的 Bangumi App Secret'
 
+# 解析并更新在看动画的分集收视进度（例如："看到第12话 1:54" -> 自动更新前 11 话）
+# 无论隐私设置如何都必须填写 bilibili_api 授权设置才有效
+PARSE_EPISODE_PROGRESS: bool = False  # 默认 False
+
 # 跳过更新已经收藏且收藏状态相同的动画的更新状态和收视进度
 SKIP_COLLECTED: bool = True  # 默认 True
 
