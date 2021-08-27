@@ -7,7 +7,7 @@ from time import sleep
 
 from aiohttp import (
     ClientError, ClientSession, ClientResponseError, ContentTypeError,
-    TCPConnector
+    TCPConnector, __version__ as aiohttp_version
 )
 
 from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
@@ -20,8 +20,9 @@ client = ClientSession(
         loop=loop
     ),
     headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0)'
-        ' Gecko/20100101 Firefox/89.0'
+        'User-Agent': f'Bilibili2Bangumi'
+        f' (https://github.com/wopub/Bilibili2Bangumi)'
+        f' aiohttp/{aiohttp_version}'
     }
 )
 
