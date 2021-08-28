@@ -141,18 +141,21 @@ async def update_one_bgm_data(
                         f'{data.bgm_user_id}/progress?subject_id={bgm_id}',
                         headers={'Authorization': data.bgm_auth_data}
                     )
-                    ep_watched = dict(map(
-                        lambda ep: (str(ep['id']), ep['status']['id'] == 2),
-                        ep_watched_info['eps']
-                    ))
+                    if ep_watched_info is None:
+                        ep_watched = set()
+                    else:
+                        ep_watched = set(map(
+                            lambda ep: str(ep['id']),
+                            filter(
+                                lambda ep: ep['status']['id'] == 2,
+                                ep_watched_info['eps']
+                            )
+                        ))
                     ep_ids = deque()
                     for i in range(1, eps_count + 1):
                         if i in ep_id_raw:
                             ep_id = ep_id_raw[i]
-                            if (
-                                ep_id not in ep_watched
-                                or not ep_watched[ep_id]
-                            ):
+                            if ep_id not in ep_watched:
                                 ep_ids.append(ep_id)
                     if len(ep_ids) > 0:
                         result = await try_post_json(  # 尝试三次
