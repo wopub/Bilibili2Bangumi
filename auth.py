@@ -59,7 +59,7 @@ async def auth_bgm(app_id, app_secret):
 
     print_debug('等待 Bangumi 授权请求...')
     while code is None:
-        await sleep(0.001)
+        await sleep(0.01)
     await site.stop()
     await runner.shutdown()
 
@@ -81,5 +81,6 @@ async def auth_bgm(app_id, app_secret):
         f'{bgm_auth_data_raw["token_type"]}'
         f' {bgm_auth_data_raw["access_token"]}'
     )
+    print_debug(f'token = "{token}"')
     print_debug('完成！')
-    return token
+    return token, bgm_auth_data_raw['user_id']
