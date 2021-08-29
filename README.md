@@ -1,6 +1,6 @@
 # Bilibili2Bangumi ![GitHub](https://img.shields.io/github/license/wopub/Bilibili2Bangumi)
 
-将 [Bilibili](https://www.bilibili.com/) 订阅动画迁移至 [Bangumi](https://bgm.tv/)，并保留原追番状态。
+将 [Bilibili](https://www.bilibili.com/) 订阅动画迁移至 [Bangumi](https://bgm.tv/)，保留原追番状态并自动点格子。
 
 欢迎 PR。
 
@@ -95,6 +95,19 @@ $ python bili2bgm.py
       ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
     
    3. 将 `App ID` 与 `App Secret` 填入 `config.py` 中。
+
+3. 其他设置：
+   
+   `bool` 类型的设置请填入 `True`（启用）或 `False`（禁用），`int` 类型的设置请填入整数。
+
+   | 名称                          | 说明                                                                           | 类型   | 默认值  |
+   | ----------------------------- | ------------------------------------------------------------------------------ | ------ | ------- |
+   | PARSE_EPISODE_PROGRESS        | 自动点在看动画的格子（无论隐私设置如何都必须填写 bilibili_api 授权设置才有效） | `bool` | `True`  |
+   | SKIP_COLLECTED                | 跳过更新已更新动画的收藏状态                                                   | `bool` | `True`  |
+   | OPEN_FAILED_BANGUMI_BILI_PAGE | 自动打开更新失败的动画的页面（可能会一次性弹出非常多页面）                     | `bool` | `False` |
+   | CONNECTION_LIMIT_PER_HOST     | 每站点最大并发连接数（越多越快，但太多可能会导致服务器不可用）                 | `int`  | `15`    |
+   | PRINT_DEBUG_INFORMATION       | 打印调试信息，***调试用***                                                       | `bool` | `False` |
+   | READ_ONLY                     | 只打印信息而不实际进行更新操作，***调试用***                                     | `bool` | `False` |
 
 ## 致谢
 
