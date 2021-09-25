@@ -113,16 +113,7 @@ async def update_one_bgm_data(
                         data={'status': 'do'},
                         headers={'Authorization': data.bgm_auth_data}
                     )
-                    code = result['code']
-                    msg = result['error']
-                    print_debug(f'预先更新收藏返回状态 {code} {msg} @ {bgm_id}')
-                    if code >= 400:
-                        print_status(
-                            f'** 预先更新收藏返回状态 {code} {msg} @ {bgm_id}'
-                        )
-                        data.bangumi_failed_count += 1
-                        data.bangumi_processed_count += 1
-                        return
+                    print_debug(f'预先更新收藏完成 @ {bgm_id}')
             if status == 'do':
                 print_debug(f'更新在看分集进度 @ {bgm_id} -> {eps_count} ...')
                 if not READ_ONLY:
@@ -213,16 +204,7 @@ async def update_one_bgm_data(
                     data={'status': status},
                     headers={'Authorization': data.bgm_auth_data}
                 )
-                code = result['code']
-                msg = result['error']
-                print_debug(f'更新收藏返回状态 {code} {msg} @ {bgm_id}')
-                if code >= 400:
-                    print_status(
-                        f'** 更新收藏返回状态 {code} {msg} @ {bgm_id}'
-                    )
-                    data.bangumi_failed_count += 1
-                    data.bangumi_processed_count += 1
-                    return
+                print_debug(f'更新收藏完成 @ {bgm_id}')
     else:
         print_debug(f'跳过 @ {bgm_id} -> {status} ...')
     data.bangumi_processed_count += 1
