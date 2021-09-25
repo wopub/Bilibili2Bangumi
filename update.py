@@ -108,7 +108,7 @@ async def update_one_bgm_data(
                 print_debug(f'预先更新收藏 @ {bgm_id} -> do ...')
                 if not READ_ONLY:
                     result = await try_post_json(  # 尝试三次
-                        3,
+                        3, client,
                         f'https://api.bgm.tv/collection/{bgm_id}/update',
                         data={'status': 'do'},
                         headers={'Authorization': data.bgm_auth_data}
@@ -208,7 +208,7 @@ async def update_one_bgm_data(
             print_debug(f'更新收藏 @ {bgm_id} -> {status} ...')
             if not READ_ONLY:
                 result = await try_post_json(  # 尝试三次
-                    3,
+                    3, client,
                     f'https://api.bgm.tv/collection/{bgm_id}/update',
                     data={'status': status},
                     headers={'Authorization': data.bgm_auth_data}
