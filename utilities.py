@@ -20,7 +20,7 @@ client = ClientSession(
         loop=loop
     ),
     headers={
-        'User-Agent': f'Bilibili2Bangumi/0.1.0'
+        'User-Agent': f'Bilibili2Bangumi/0.1.1'
         f' (https://github.com/wopub/Bilibili2Bangumi)'
         f' aiohttp/{aiohttp_version}'
     }
