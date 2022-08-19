@@ -10,7 +10,8 @@ from aiohttp import (
     TCPConnector, __version__ as aiohttp_version
 )
 
-from config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
+from bilibili2bangumi import __version__ as bilibili2bangumi_version
+from bilibili2bangumi.config import CONNECTION_LIMIT_PER_HOST, PRINT_DEBUG_INFORMATION
 
 loop = get_event_loop()
 
@@ -20,7 +21,7 @@ client = ClientSession(
         loop=loop
     ),
     headers={
-        'User-Agent': f'Bilibili2Bangumi/0.1.1'
+        'User-Agent': f'Bilibili2Bangumi/{bilibili2bangumi_version}'
         f' (https://github.com/wopub/Bilibili2Bangumi)'
         f' aiohttp/{aiohttp_version}'
     }

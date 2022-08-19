@@ -1,24 +1,28 @@
 [tool.poetry]
 name = "bilibili2bangumi"
-version = "0.1.1"
+version = "0.2.0"
 description = "将 Bilibili 订阅动画迁移至 Bangumi，保留原追番状态并自动点格子。"
 authors = ["Bilibili2Bangumi contributors"]
 license = "AGPL-3.0-only"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-bilibili-api-python = "^10"
+bilibili-api-python = "^11"
 aiohttp = "^3.8"
-pytest = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.3"
+autopep8 = "^1.7.0"
+mypy = "^0.971"
 
 # 使用镜像源以加快大陆用户的依赖安装速度
 [[tool.poetry.source]]
 name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
+
+[tool.poetry.scripts]
+main = "bilibili2bangumi.bili2bgm:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

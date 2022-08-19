@@ -4,7 +4,7 @@ from update import get_and_update
 from config import BILI_UID, SESSDATA, BILI_JCT, BUVID3, APP_ID, APP_SECRET
 
 
-async def main():
+async def async_main():
     if BILI_UID == '你的 Bilibili UID':
         print_status('** 未指定 Bilibili UID！')
         exit(1)
@@ -36,9 +36,9 @@ async def main():
     )
 
 
-if __name__ == '__main__':
+def main():
     try:
-        loop.run_until_complete(main())
+        loop.run_until_complete(async_main())
     except KeyboardInterrupt:
         print('\n已取消！')
     except SystemExit:
@@ -48,3 +48,7 @@ if __name__ == '__main__':
         print('\n完成！')
     finally:
         loop.run_until_complete(client.close())
+
+
+if __name__ == '__main__':
+    main()

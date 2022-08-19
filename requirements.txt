@@ -1,2 +1,0 @@
-bilibili-api>=5
-aiohttp>=3.7

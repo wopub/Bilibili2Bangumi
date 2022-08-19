@@ -17,46 +17,18 @@ $ cd Bilibili2Bangumi
 
 ### 依赖安装
 
-#### Pipenv(推荐)
-
-如果没有安装包管理器 [`pipenv`](https://pipenv.pypa.io/en/latest/) ，请安装：
+bilibili2bangumi 使用 Poetry 来管理依赖，请先[安装 Poetry](https://python-poetry.org/docs/#installation)，然后执行以下命令：
 
 ```sh
-$ pip install pipenv
-```
-
-再安装依赖包：
-
-```sh
-$ pipenv install
-```
-
-或者使用清华大学开源软件镜像源：
-
-```sh
-$ pipenv install --pypi-mirror https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-#### Pip
-
-```sh
-$ pip install -r requirements.txt
+$ poetry install
 ```
 
 ## 使用
 
-先按下述修改完配置文件。
-
-如果使用了 Pipenv 来安装依赖则通过 Pipenv 运行：
+先按下述修改完配置文件，然后执行以下命令：
    
 ```sh
-$ pipenv run python bili2bgm.py
-```   
-
-或者如果使用了 Pip 来安装依赖则直接运行：
-
-```sh
-$ python bili2bgm.py
+$ poetry run main
 ```
 
 程序运行时会显示当前进度和因各种原因而迁移失败的数据。
