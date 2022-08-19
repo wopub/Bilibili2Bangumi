@@ -7,8 +7,15 @@ from aiohttp import web
 from bilibili2bangumi.utilities import print_debug, client, print_status, try_post_json
 
 
-async def auth_bgm(app_id: str, app_secret: str):
-    '''取得 Bangumi 授权'''
+_BILIBILI2BANGUMI_APP_ID = 'bgm240762ff550f55c1f'
+_BILIBILI2BANGUMI_APP_SECRET = '2393b274af22e86bdd38e06723a69de8'
+
+
+async def auth_bgm(app_id: str = _BILIBILI2BANGUMI_APP_ID,
+                   app_secret: str = _BILIBILI2BANGUMI_APP_SECRET):
+    '''取得 Bangumi 授权。
+    默认的 App ID 和 App Secret 只用于 Bilibili2Bangumi。
+    如果想要在其他地方使用这段代码，请使用自己的 App ID 和 App Secret，并遵守 AGPL-3.0-only。'''
     code = None
 
     async def handler(request):

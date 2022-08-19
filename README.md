@@ -15,8 +15,6 @@ $ git clone https://github.com/wopub/Bilibili2Bangumi.git
 $ cd Bilibili2Bangumi
 ```
 
-### 依赖安装
-
 bilibili2bangumi 使用 Poetry 来管理依赖，请先[安装 Poetry](https://python-poetry.org/docs/#installation)，然后执行以下命令：
 
 ```sh
@@ -41,34 +39,11 @@ $ poetry run main
    
    在 `config.py` 中填入需要迁移用户的 `Bilibili UID`。
    
-   如果要迁移 **隐私设置未公开** 的 Bilibili 追番数据，则需要获取`身份验证信息`，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。
-   
-   获取后在 `config.py` 中填入 `SESSDATA`、`BILI_JCT` 和 `BUVID3` 信息。
+   获取身份验证信息，获取方法[详见此处](https://www.passkou.com/bilibili-api/#/get-credential)。获取后在 `config.py` 中填入 `SESSDATA`、`BILI_JCT` 和 `BUVID3` 信息。
 
    **注意，请不要泄露这些信息给他人，否则你的账号将可能遭受被盗的风险！**
 
-2. Bangumi API OAuth2 授权配置:
-   
-   由于 [Bangumi API](https://github.com/bangumi/api/blob/master/docs-raw/How-to-Auth.md) 只提供 Oauth2 授权码方式，需获取并填入 `App ID` 与 `App Secret`：
-   
-   1. 在 [Bangumi 开发平台](https://bgm.tv/dev/app) 中创建新应用，如下图
-   
-      ![image](https://user-images.githubusercontent.com/37031767/116994802-c669cc80-ad0b-11eb-9033-f60de4e2471c.png)
-      
-      类型选 “应用”，其余随意填写
-      
-      ![image](https://user-images.githubusercontent.com/37031767/116995199-59a30200-ad0c-11eb-99f7-ef361a26e901.png)
-   
-   
-   2. 获取 `App ID` 与 `App Secret`，并将 **回调地址** 设置为 `http://localhost:3000`
-      
-      **注意，请不要泄露这些信息给他人，否则你的应用权限将可能遭受被盗用的风险！**
-   
-      ![image](https://user-images.githubusercontent.com/37031767/116995932-493f5700-ad0d-11eb-8403-680840a04023.png)
-    
-   3. 将 `App ID` 与 `App Secret` 填入 `config.py` 中。
-
-3. 其他设置：
+2. 其他设置：
    
    `bool` 类型的设置请填入 `True`（启用）或 `False`（禁用），`int` 类型的设置请填入整数。
 
@@ -79,7 +54,7 @@ $ poetry run main
    | OPEN_FAILED_BANGUMI_BILI_PAGE | 自动打开更新失败的动画的页面（可能会一次性弹出非常多页面）                     | `bool` | `False` |
    | CONNECTION_LIMIT_PER_HOST     | 每站点最大并发连接数（越多越快，但太多可能会导致服务器不可用）                 | `int`  | `15`    |
    | PRINT_DEBUG_INFORMATION       | 打印调试信息，***调试用***                                                       | `bool` | `False` |
-   | READ_ONLY                     | 只打印信息而不实际进行更新操作，***调试用***                                     | `bool` | `False` |
+   | DRY_RUN                     | 只打印信息而不实际进行更新操作，***调试用***                                     | `bool` | `False` |
 
 ## 致谢
 

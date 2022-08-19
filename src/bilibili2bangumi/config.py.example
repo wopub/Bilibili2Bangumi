@@ -1,16 +1,10 @@
 '''设置'''
 
-# bilibili_api 设置，**必填**
+# bilibili_api 授权设置，**必填**
 BILI_UID: str = '你的 Bilibili UID'
-
-# bilibili_api 授权设置，选填（隐私设置为不公开则**必填**）
 SESSDATA: str = '你的 Bilibili SESSDATA'
 BILI_JCT: str = '你的 Bilibili bili_jct'
 BUVID3: str = '你的 Bilibili buvid3'
-
-# Bangumi OAuth2 授权设置，**必填**
-APP_ID: str = '你的 Bangumi App ID'
-APP_SECRET: str = '你的 Bangumi App Secret'
 
 # 自动点在看动画的格子
 # 例如："看到第12话 1:54" -> 自动点前 11 话的格子
@@ -30,4 +24,4 @@ CONNECTION_LIMIT_PER_HOST: int = 15  # 默认 15
 PRINT_DEBUG_INFORMATION: bool = False  # 默认 False
 
 # 只打印信息而不实际进行更新操作，**调试用**
-READ_ONLY: bool = False  # 默认 False
+DRY_RUN: bool = False  # 默认 False
